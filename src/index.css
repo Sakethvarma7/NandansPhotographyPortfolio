@@ -691,13 +691,16 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 
 .search-panel { position: relative; width: min(660px, 100%); max-height: min(74vh, 640px); display: flex; flex-direction: column; overflow: hidden;
   border-radius: 30px;
-  /* The fill is deliberately thin — you should see the page through this. What
-     keeps dark text legible is not opacity but the brightness lift in the
-     backdrop filter: it raises the luminance of whatever sits behind before the
-     tint goes over it, which is how iOS keeps light glass readable over dark
-     content. */
-  background: linear-gradient(158deg, rgba(255, 253, 248, .34), rgba(243, 238, 228, .22));
-  backdrop-filter: blur(52px) saturate(200%) brightness(1.42); -webkit-backdrop-filter: blur(52px) saturate(200%) brightness(1.42);
+  /* Legibility is carried by contrast(), not brightness().
+     brightness() MULTIPLIES, so a near-black photograph behind the panel stays
+     near-black (0 x 1.42 = 0) and dark text on it is unreadable — which is what
+     went wrong before. contrast(.62) pulls values toward mid-grey first, which
+     lifts blacks; brightness then raises the whole thing.
+     Worst case, a pure black photo behind: 0 -> .19 -> .276, and a .50 fill
+     over that lands near rgb(163) — about 6.3:1 against the title ink and
+     4.8:1 against the muted line. Both clear AA. */
+  background: linear-gradient(158deg, rgba(255, 253, 248, .5), rgba(246, 242, 234, .44));
+  backdrop-filter: blur(34px) saturate(150%) contrast(.62) brightness(1.45); -webkit-backdrop-filter: blur(34px) saturate(150%) contrast(.62) brightness(1.45);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, .9),
     inset 0 -1px 2px rgba(140, 118, 78, .14),
@@ -728,15 +731,24 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
   background: rgba(255, 255, 255, .22);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .75), inset 0 0 0 1px rgba(255, 255, 255, .3), 0 1px 2px rgba(60, 48, 30, .05); }
 .search-field input { flex: 1; min-width: 0; font-family: 'DM Sans', sans-serif; font-size: 17px; color: #1d201d; background: none; border: 0; outline: none; appearance: none; }
-.search-field input::placeholder { color: #8f958c; }
+.search-field input::placeholder { color: #5e655c; }
 .search-field input::-webkit-search-cancel-button { display: none; }
 .search-close { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 999px; color: #646b62; transition: background var(--t-fast) ease, color var(--t-fast) ease, transform var(--t-fast) var(--ease-out); }
 .search-close:hover { background: rgba(255, 255, 255, .42); color: #1d201d; transform: scale(1.06); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9); }
 
-.search-body { position: relative; z-index: 4; flex: 1; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 6px 10px 10px; }
+.search-body { position: relative; z-index: 4; flex: 1; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 6px 10px 10px;
+  scrollbar-width: thin; scrollbar-color: rgba(29, 32, 29, .3) transparent; }
+/* Thumb only — no track, no stepper arrows. The transparent border plus
+   background-clip insets the thumb so it reads as a floating pill. */
+.search-body::-webkit-scrollbar { width: 11px; }
+.search-body::-webkit-scrollbar-track { background: transparent; }
+.search-body::-webkit-scrollbar-button { display: none; height: 0; width: 0; }
+.search-body::-webkit-scrollbar-corner { background: transparent; }
+.search-body::-webkit-scrollbar-thumb { background: rgba(29, 32, 29, .26); border: 3px solid transparent; background-clip: content-box; border-radius: 999px; }
+.search-body::-webkit-scrollbar-thumb:hover { background: rgba(29, 32, 29, .44); background-clip: content-box; }
 
 .search-hint { padding: 16px 8px 10px; }
-.search-hint .eyebrow { margin: 0 0 13px; }
+.search-hint .eyebrow { margin: 0 0 13px; color: #463414; }
 .search-chips { display: flex; flex-wrap: wrap; gap: 9px; }
 .search-chips button { position: relative; overflow: hidden; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: #565d55; padding: 10px 16px; border-radius: 999px;
   background: rgba(255, 255, 255, .24);
@@ -748,9 +760,9 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 .search-results { list-style: none; margin: 0; padding: 2px 0 4px; }
 .search-results button { position: relative; display: grid; grid-template-columns: 92px 1fr auto; align-items: baseline; gap: 14px; width: 100%; padding: 13px 14px; text-align: left; border-radius: 18px; transition: background var(--t-fast) ease, box-shadow var(--t-fast) ease; }
 .search-results button[data-active='true'] { background: linear-gradient(140deg, rgba(255, 255, 255, .38), rgba(197, 167, 109, .3)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .95), inset 0 0 0 1px rgba(255, 255, 255, .5), 0 4px 14px -6px rgba(120, 96, 50, .35); }
-.search-kind { grid-column: 1; grid-row: 1; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .13em; text-transform: uppercase; color: #8a6d3a; }
+.search-kind { grid-column: 1; grid-row: 1; font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: .13em; text-transform: uppercase; color: #463414; }
 .search-title { grid-column: 2; grid-row: 1; font-size: 16px; color: #1d201d; overflow-wrap: anywhere; }
-.search-detail { grid-column: 2; grid-row: 2; font-size: 13px; color: #646b62; }
+.search-detail { grid-column: 2; grid-row: 2; font-size: 13px; color: #313830; }
 /* Explicit column is load-bearing: grid places definite-row items before auto
    ones, so without it this took column 1 and right-aligned every title. */
 .search-enter { grid-column: 3; grid-row: 1 / span 2; align-self: center; color: #8a6d3a; opacity: 0; transform: translateX(-4px); transition: opacity var(--t-fast) ease, transform var(--t-fast) var(--ease-out); }
@@ -758,19 +770,16 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 
 .search-empty { padding: 26px 12px 30px; }
 .search-empty p:first-child { margin: 0 0 10px; font-size: 17px; color: #1d201d; }
-.search-empty .body-copy { max-width: 42ch; }
+.search-empty .body-copy { max-width: 42ch; color: #313830; }
 .search-ask { display: inline-flex; align-items: center; gap: 10px; margin-top: 18px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #3a3f38; padding: 11px 18px; border-radius: 999px;
   background: rgba(255, 255, 255, .26); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .85), inset 0 0 0 1px rgba(255, 255, 255, .36), 0 2px 6px rgba(60, 48, 30, .09);
   transition: background var(--t-fast) ease, transform var(--t-fast) var(--ease-out); }
 .search-ask:hover { background: rgba(197, 167, 109, .32); transform: translateY(-2px); }
 
-.search-foot { position: relative; z-index: 4; display: flex; gap: 20px; padding: 12px 20px; border-top: 1px solid rgba(255, 255, 255, .4); background: rgba(255, 255, 255, .12); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #6e756c; }
-.search-foot kbd { font: inherit; background: rgba(255, 255, 255, .45); border-radius: 6px; padding: 2px 7px; margin-right: 5px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 0 0 1px rgba(140, 118, 78, .18), 0 1px 2px rgba(60, 48, 30, .12); }
 
 @media (max-width: 860px) {
   .nav-actions { gap: 4px; }
   .nav-search { width: 46px; height: 46px; }
-  .search-foot { display: none; }          /* no physical keyboard to hint at */
   .search-scrim { padding: 0; }
   .search-panel { width: 100%; max-height: 100%; height: 100dvh; border-radius: 0; }
   .search-panel::before, .search-panel::after { display: none; }

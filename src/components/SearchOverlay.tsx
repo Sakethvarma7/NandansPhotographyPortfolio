@@ -145,11 +145,6 @@ export default function SearchOverlay({
           )}
         </div>
 
-        <div className="search-foot">
-          <span><kbd>↑</kbd><kbd>↓</kbd> move</span>
-          <span><kbd>↵</kbd> open</span>
-          <span><kbd>esc</kbd> close</span>
-        </div>
       </div>
     </div>
   );
