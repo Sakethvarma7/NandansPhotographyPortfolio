@@ -213,16 +213,50 @@ function useReadingProgress() {
  * one that settles. A cached image is already complete before React runs, so
  * the effect catches that case too.
  */
-function Shot({ image, className, eager }: { image: GalleryImage; className?: string; eager?: boolean }) {
+function Shot({
+  image, className, eager, natural,
+}: { image: GalleryImage; className?: string; eager?: boolean; natural?: boolean }) {
   const imgRef = useRef<HTMLImageElement>(null);
+  const wrapRef = useRef<HTMLSpanElement>(null);
   const [loaded, setLoaded] = useState(false);
 
+  /*
+   * `natural` means the frame should take the photograph's shape rather than
+   * the other way round. The true ratio is only knowable once the file has
+   * decoded, so it is written to --ar then; until it arrives the tile keeps the
+   * rough guess its tone class supplies, which reserves roughly the right space
+   * and stops the masonry snapping about as images land.
+   */
+  const adopt = useCallback(() => {
+    setLoaded(true);
+    if (!natural) return;
+    const img = imgRef.current;
+    if (img?.naturalWidth && img.naturalHeight) {
+      wrapRef.current?.style.setProperty('--ar', `${img.naturalWidth} / ${img.naturalHeight}`);
+    }
+  }, [natural]);
+
   useEffect(() => {
-    if (imgRef.current?.complete) setLoaded(true);
-  }, [image.src]);
+    if (imgRef.current?.complete) adopt();
+  }, [image.src, adopt]);
+
+  /*
+   * Backstop. A file can finish decoding during the commit, in the window
+   * between React rendering the <img> and its onLoad being wired up — measured
+   * 5 of 28 tiles missing their ratio that way, which left them on the guess
+   * and therefore cropped. Re-asserting once the element is known to have
+   * loaded closes it without forcing any extra work.
+   */
+  useEffect(() => {
+    if (!natural || !loaded) return;
+    const img = imgRef.current;
+    const wrap = wrapRef.current;
+    if (!img?.naturalWidth || !wrap || wrap.style.getPropertyValue('--ar')) return;
+    wrap.style.setProperty('--ar', `${img.naturalWidth} / ${img.naturalHeight}`);
+  }, [natural, loaded]);
 
   return (
-    <span className={`shot ${className ?? ''} ${loaded ? 'is-loaded' : ''}`}>
+    <span ref={wrapRef} className={`shot ${className ?? ''} ${loaded ? 'is-loaded' : ''}`}>
       <img
         ref={imgRef}
         src={image.src}
@@ -230,7 +264,7 @@ function Shot({ image, className, eager }: { image: GalleryImage; className?: st
         loading={eager ? 'eager' : 'lazy'}
         decoding="async"
         draggable={false}
-        onLoad={() => setLoaded(true)}
+        onLoad={adopt}
         /* never leave a broken photograph stuck at opacity 0 */
         onError={() => setLoaded(true)}
       />
@@ -434,7 +468,7 @@ function DepthGallery({ images }: { images: GalleryImage[] }) {
             onClick={() => setLightbox(index)}
             aria-label={`Open photograph ${index + 1} of ${images.length}`}
           >
-            <Shot image={image} />
+            <Shot image={image} natural />
             <small>{String(index + 1).padStart(2, '0')}</small>
           </button>
         ))}

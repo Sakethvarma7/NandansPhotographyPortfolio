@@ -183,11 +183,20 @@ em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: itali
 .depth-photo:hover .shot img { filter: saturate(1); transform: scale(1.05); }
 .depth-photo small { position: absolute; top: 12px; left: 14px; z-index: 3; font-family: 'DM Mono', monospace; font-size: 9px; color: #fff; letter-spacing: .1em; text-shadow: 0 1px 4px rgba(0, 0, 0, .55); opacity: 0; transition: opacity .3s ease; }
 .depth-photo:hover small { opacity: .9; }
-.tone-0 .shot { aspect-ratio: 3 / 4; }
-.tone-1 .shot { aspect-ratio: 1 / 1; }
-.tone-2 .shot { aspect-ratio: 4 / 5; }
-.tone-3 .shot { aspect-ratio: 4 / 3; }
-.tone-4 .shot { aspect-ratio: 2 / 3; }
+/*
+ * Gallery tiles take each photograph's own shape, so nothing is cropped: --ar
+ * is written from naturalWidth/naturalHeight once the file decodes. The tone
+ * classes are no longer the tile's shape — they are only the guess held before
+ * that, so the column reserves roughly the right height and the masonry does
+ * not snap about as images arrive. Mixed portrait and landscape now sit
+ * together at their true proportions.
+ */
+.depth-photo .shot { aspect-ratio: var(--ar, var(--ar-guess, 3 / 4)); }
+.tone-0 { --ar-guess: 3 / 4; }
+.tone-1 { --ar-guess: 1 / 1; }
+.tone-2 { --ar-guess: 4 / 5; }
+.tone-3 { --ar-guess: 4 / 3; }
+.tone-4 { --ar-guess: 2 / 3; }
 
 .back-link { display: inline-flex; align-items: center; gap: 10px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #646b62; transition: color .25s ease; }
 .back-link:hover { color: #1d201d; }
