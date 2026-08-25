@@ -92,7 +92,6 @@ em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: itali
 .band-grid[data-count='3'] { grid-template-columns: repeat(3, 1fr); }
 .band-card { position: relative; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 2px; color: #fff; display: block; }
 .band-card .shot img { transition: transform .8s cubic-bezier(.2, .7, .2, 1), filter .5s ease; }
-.band-card:hover .shot img { transform: scale(1.05); filter: brightness(.82); }
 .band-card-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(12, 15, 12, .55), rgba(12, 15, 12, .12) 55%); }
 /* Label sits just below centre so a play button can share the middle without
    the two colliding — kept uniform whether or not the card has one. */
@@ -130,7 +129,6 @@ em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: itali
 .row-number { font-family: 'DM Mono', monospace; font-size: 11px; color: #646b62; }
 .row-image { width: 220px; height: 130px; overflow: hidden; display: block; }
 .row-image .shot img { filter: saturate(.75); transition: transform .6s ease, filter .4s ease; }
-.work-row:hover .row-image .shot img { transform: scale(1.06); filter: saturate(1); }
 .row-title { font-size: clamp(26px, 2.8vw, 40px); font-weight: 400; letter-spacing: -.04em; display: flex; flex-direction: column; gap: 6px; }
 .row-title em { font-size: 11px; font-family: 'DM Mono', monospace; font-style: normal; letter-spacing: .12em; text-transform: uppercase; color: #646b62; }
 .row-description { color: #686f66; font-size: 14px; line-height: 1.6; max-width: 320px; }
@@ -148,7 +146,6 @@ em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: itali
 .couple-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding-top: 34px; }
 .couple-card { position: relative; aspect-ratio: 4 / 3; overflow: hidden; color: #fff; }
 .couple-card .shot img { transition: transform .8s cubic-bezier(.2, .7, .2, 1), filter .5s ease; }
-.couple-card:hover .shot img { transform: scale(1.05); filter: brightness(.8); }
 .couple-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(12, 15, 12, .5), rgba(12, 15, 12, .06) 60%); }
 .couple-name { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2; font-family: 'Playfair Display', serif; font-size: clamp(24px, 2.4vw, 38px); letter-spacing: .01em; text-shadow: 0 2px 18px rgba(0, 0, 0, .45); white-space: nowrap; }
 .couple-card small { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 2; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; opacity: .82; white-space: nowrap; }
@@ -179,8 +176,6 @@ em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: itali
 .depth-photo { display: block; width: 100%; margin: 0 0 24px; break-inside: avoid; -webkit-column-break-inside: avoid; position: relative; border-radius: 3px; box-shadow: 0 20px 44px -22px rgba(29, 32, 29, .5), 0 5px 14px -8px rgba(29, 32, 29, .3); transition: transform .55s cubic-bezier(.2, .7, .2, 1), box-shadow .55s ease; }
 .depth-photo .shot { border-radius: 3px; }
 .depth-photo .shot img { filter: saturate(.84); transition: filter .45s ease, transform .9s cubic-bezier(.2, .7, .2, 1); }
-.depth-photo:hover { transform: translateY(-9px); box-shadow: 0 38px 70px -24px rgba(29, 32, 29, .58), 0 12px 26px -12px rgba(29, 32, 29, .38); z-index: 2; }
-.depth-photo:hover .shot img { filter: saturate(1); transform: scale(1.05); }
 .depth-photo small { position: absolute; top: 12px; left: 14px; z-index: 3; font-family: 'DM Mono', monospace; font-size: 9px; color: #fff; letter-spacing: .1em; text-shadow: 0 1px 4px rgba(0, 0, 0, .55); opacity: 0; transition: opacity .3s ease; }
 .depth-photo:hover small { opacity: .9; }
 /*
@@ -413,8 +408,6 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 45; pointer-event
 
 /* Cards rise slightly and their photograph drifts in behind them. */
 .band-card, .couple-card { transition: transform var(--t-slow) var(--ease-out), box-shadow var(--t-slow) var(--ease-out); }
-.band-card:hover, .couple-card:hover { transform: translateY(-6px); box-shadow: 0 34px 60px -30px rgba(29, 32, 29, .55); }
-.band-card:active, .couple-card:active, .depth-photo:active { transform: translateY(-2px) scale(.995); }
 .band-card-label, .couple-name { transition: transform var(--t-slow) var(--ease-out), letter-spacing var(--t-slow) var(--ease-out); }
 .band-card:hover .band-card-label { letter-spacing: .09em; }
 .couple-card:hover .couple-name { letter-spacing: .04em; }
@@ -549,7 +542,6 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 
 /* Shadows tinted to the ground they fall on, never neutral black. */
 .band-card, .couple-card, .depth-photo { box-shadow: 0 18px 40px -24px rgba(58, 46, 30, .5); }
-.band-card:hover, .couple-card:hover { box-shadow: 0 34px 62px -28px rgba(58, 46, 30, .6); }
 
 /* An asymmetric first cell breaks the three-equal-columns look on wide screens. */
 @media (min-width: 1101px) {
@@ -909,4 +901,78 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
   .strip-wordmark, .strip-stage, .strip-nav, .strip-title, .strip-scroll { animation: none; }
   .strip-scroll svg { animation: none; }
   .strip-nav button:hover { transform: none; }
+}
+
+/* ============================================================
+   IMAGE HOVER — one vocabulary, and only where hovering is real
+   ------------------------------------------------------------
+   Every hover below is wrapped in (hover: hover) and (pointer: fine).
+   Without that guard a phone applies :hover on tap and leaves the
+   card stuck lifted and zoomed until something else is touched,
+   which reads as a stuck card rather than as feedback.
+
+   The surfaces had drifted apart — scale 1.05 here, 1.06 there,
+   lifts of 6px and 9px, three different shadows. They now share
+   one set of values, so the whole site responds the same way.
+   ============================================================ */
+
+:root {
+  --lift: -5px;          /* how far a surface rises under the cursor */
+  --zoom: 1.045;         /* how far the photograph inside it pushes  */
+}
+
+@media (hover: hover) and (pointer: fine) {
+
+  /* --- gallery tiles ------------------------------------------------ */
+  /* Was a 9px lift, which read as a jump rather than a response. */
+  .depth-photo:hover {
+    transform: translateY(var(--lift));
+    box-shadow:
+      0 28px 56px -26px rgba(29, 32, 29, .5),
+      0 8px 20px -10px rgba(29, 32, 29, .3);
+    z-index: 2;
+  }
+  .depth-photo:hover .shot img { filter: saturate(1); transform: scale(var(--zoom)); }
+  .depth-photo:active { transform: translateY(-2px); }
+
+  /* --- collection and couple cards ---------------------------------- */
+  /* These carry text over the photograph, so they darken as well as
+     zoom — the label has to stay readable while the image moves. */
+  .band-card:hover, .couple-card:hover {
+    transform: translateY(var(--lift));
+    box-shadow: 0 30px 58px -28px rgba(58, 46, 30, .58);
+  }
+  .band-card:hover .shot img,
+  .couple-card:hover .shot img { transform: scale(var(--zoom)); filter: brightness(.82); }
+  .band-card:active, .couple-card:active { transform: translateY(-2px) scale(.995); }
+
+  /* --- work index rows ---------------------------------------------- */
+  .work-row:hover .row-image .shot img { transform: scale(var(--zoom)); filter: saturate(1); }
+
+  /* --- filmstrip hero ------------------------------------------------
+     The deck writes each card's transform every frame, so a CSS
+     transform here would simply be overwritten. Hover therefore works
+     through light and shadow only, which the loop does not touch. */
+  .strip-card { transition: box-shadow .4s var(--ease-out); }
+  .strip-card:hover {
+    box-shadow:
+      0 calc(16px + var(--focus) * 26px) calc(26px + var(--focus) * 38px) rgba(57, 38, 19, calc(.3 + var(--focus) * .26)),
+      inset 0 0 0 1px rgba(255, 255, 255, .78);
+  }
+  .strip-card:hover .strip-portrait img { filter: saturate(calc(.78 + var(--focus) * .32)) contrast(1.06); }
+}
+
+/* Coarse pointers get the press instead: a brief settle on tap, which is
+   feedback you can actually feel rather than a state that sticks. */
+@media (hover: none), (pointer: coarse) {
+  .depth-photo:active { transform: scale(.985); }
+  .band-card:active, .couple-card:active { transform: scale(.99); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .depth-photo:hover, .band-card:hover, .couple-card:hover,
+  .depth-photo:active, .band-card:active, .couple-card:active { transform: none; }
+  .depth-photo:hover .shot img, .band-card:hover .shot img,
+  .couple-card:hover .shot img, .work-row:hover .row-image .shot img,
+  .strip-card:hover .strip-portrait img { transform: none; }
 }
