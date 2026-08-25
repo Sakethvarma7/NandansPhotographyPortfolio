@@ -1,5 +1,5 @@
 import {
-  useCallback, useEffect, useRef, useState,
+  useCallback, useEffect, useLayoutEffect, useRef, useState,
   type CSSProperties, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode,
 } from 'react';
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Instagram, Mail, Menu, MessageCircle, Phone, Play, X } from 'lucide-react';
@@ -46,17 +46,61 @@ function getRoute(): Route {
 
 function useRoute() {
   const [route, setRoute] = useState<Route>(getRoute);
+
   useEffect(() => {
+    /* Browsers restore the previous scroll offset on history navigation, which
+       fights our own reset and lands the visitor mid-page. We own it instead. */
+    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
     const onPop = () => setRoute(getRoute());
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
+
   const navigate = useCallback((path: string) => {
+    if (path === window.location.pathname) return;
     window.history.pushState({}, '', path);
     setRoute(getRoute());
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    /* NB: no scrolling here. This runs before React has swapped the page, so
+       scrolling now animates the OUTGOING page and the new content renders
+       under wherever that animation happened to stop — which is exactly how
+       pages ended up opening halfway down. The reset lives in a layout effect
+       keyed to the route, after the new DOM is committed. */
   }, []);
+
   return { route, navigate };
+}
+
+/**
+ * Puts every newly-opened page at its top, after the new content is committed
+ * but before the browser paints, so there is no visible jump.
+ *
+ * `instant` matters: `html { scroll-behavior: smooth }` would otherwise turn
+ * this into an animation that the route change can interrupt. Anchor scrolling
+ * inside a page ("scroll to explore") still animates, because that passes
+ * `smooth` explicitly.
+ */
+function useScrollToTopOnRouteChange(routeKey: string) {
+  useLayoutEffect(() => {
+    const top = () => window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+
+    top();
+
+    /*
+     * Measured: the first call lands at exactly 0, then the browser nudges the
+     * page down ~40px within the next frame or two. It is not our code — a
+     * scroll trap caught only this one call — it is the browser's own scroll
+     * anchoring reacting as webfonts swap in and retitle the big display type.
+     *
+     * So re-assert across the next two frames, then stop. Bounded like this it
+     * cannot fight a visitor who starts scrolling: by the time a real scroll is
+     * possible the effect has already finished.
+     */
+    let frame = requestAnimationFrame(() => {
+      top();
+      frame = requestAnimationFrame(top);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [routeKey]);
 }
 
 type Nav = (path: string) => void;
@@ -1039,6 +1083,7 @@ function App() {
   const routeKey = `${route.page}/${route.categoryId ?? ''}/${route.collectionId ?? ''}/${route.storyId ?? ''}`;
   const [title, description] = metaFor(route);
   useDocumentMeta(title, description);
+  useScrollToTopOnRouteChange(routeKey);
   useImageProtection();
   useScrollReveal(routeKey);
   useReadingProgress();
