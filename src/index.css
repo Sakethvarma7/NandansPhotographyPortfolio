@@ -53,11 +53,21 @@ em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: itali
 
 .nav-links { display: flex; align-items: center; min-width: 0; gap: clamp(14px, 2.2vw, 34px); font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
 .nav-links button { position: relative; padding: 8px 2px; transition: opacity .25s ease; }
-.nav-links button:hover, .nav-cta:hover, footer button:hover, footer a:hover { opacity: .58; }
+.nav-links button:hover, footer button:hover, footer a:hover { opacity: .58; }
 .nav-links button::after { content: ''; position: absolute; left: 0; right: 0; bottom: 2px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .38s var(--ease-out); }
 .nav-links button:hover::after { transform: scaleX(1); }
 
-.nav-cta { display: inline-flex; align-items: center; gap: 9px; flex-shrink: 0; font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; border-bottom: 1px solid rgba(29, 32, 29, .6); padding-bottom: 6px; transition: opacity .25s ease; }
+/* The one solid element in the bar. It was an underlined text link, which put
+   it at the same visual weight as the nav items beside it and let it sink into
+   the cream. Filled dark, it is unmistakably the primary action. */
+.nav-cta {
+  display: inline-flex; align-items: center; gap: 10px; flex: 0 0 auto;
+  font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+  color: #f6f3ec; background: #1d201d;
+  padding: 11px 14px 11px 18px; border-radius: 999px; border: 0;
+  box-shadow: 0 2px 6px rgba(29, 32, 29, .18), inset 0 1px 0 rgba(255, 255, 255, .09);
+  transition: background var(--t-mid) ease, transform var(--t-mid) var(--ease-out), box-shadow var(--t-mid) ease;
+}
 
 .menu-button { display: none; flex: 0 0 auto; width: 46px; height: 46px; place-items: center; margin-right: -8px; }
 
@@ -520,8 +530,11 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 
 /* Trailing arrows sit in their own disc rather than floating beside the label. */
 .cta-disc { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: rgba(29, 32, 29, .09); transition: background var(--t-mid) ease, transform var(--t-mid) var(--ease-out); }
-.nav-cta { border-bottom: 0; padding-bottom: 0; gap: 10px; }
-.nav-cta:hover .cta-disc { background: rgba(29, 32, 29, .16); transform: translate(2px, -2px); }
+.nav-cta:hover { background: #2b2f2a; transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(29, 32, 29, .42), inset 0 1px 0 rgba(255, 255, 255, .12); }
+.nav-cta:active { transform: translateY(0); }
+/* The disc sits on dark now, so it lightens rather than darkens. */
+.nav-cta .cta-disc { background: rgba(246, 243, 236, .16); }
+.nav-cta:hover .cta-disc { background: rgba(246, 243, 236, .3); transform: translate(2px, -2px); }
 .enquiry-submit .cta-disc { background: rgba(244, 241, 235, .18); }
 .enquiry-submit:hover .cta-disc { background: rgba(244, 241, 235, .3); transform: translate(2px, -2px); }
 
