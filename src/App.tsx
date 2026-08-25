@@ -2,7 +2,8 @@ import {
   useCallback, useEffect, useLayoutEffect, useRef, useState,
   type CSSProperties, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode,
 } from 'react';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Instagram, Mail, Menu, MessageCircle, Phone, Play, X } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Instagram, Mail, Menu, MessageCircle, Phone, Play, Search, X } from 'lucide-react';
+import SearchOverlay from '@/components/SearchOverlay';
 import {
   filmCategories,
   findCategory,
@@ -252,7 +253,7 @@ function Crumbs({ items, navigate }: { items: { label: string; path?: string }[]
   );
 }
 
-function SiteNav({ navigate, current }: { navigate: Nav; current: Route['page'] }) {
+function SiteNav({ navigate, current, onSearch }: { navigate: Nav; current: Route['page']; onSearch: () => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const go = (path: string) => { setMenuOpen(false); navigate(path); };
   /* Nothing indicated the current section — pure guesswork for wayfinding. */
@@ -269,10 +270,15 @@ function SiteNav({ navigate, current }: { navigate: Nav; current: Route['page'] 
         <button className={on('about')} aria-current={current === 'about' ? 'page' : undefined} onClick={() => go('/about')}>About</button>
         <button className={on('contact')} aria-current={current === 'contact' ? 'page' : undefined} onClick={() => go('/contact')}>Contact</button>
       </div>
-      <button className="nav-cta" onClick={() => go('/contact')}>Enquire <i className="cta-disc"><ArrowUpRight size={14} /></i></button>
-      <button className="menu-button" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">
-        {menuOpen ? <X size={22} /> : <Menu size={22} />}
-      </button>
+      <div className="nav-actions">
+        <button className="nav-search" type="button" onClick={() => { setMenuOpen(false); onSearch(); }} aria-label="Search the portfolio">
+          <Search size={19} />
+        </button>
+        <button className="nav-cta" onClick={() => go('/contact')}>Enquire <i className="cta-disc"><ArrowUpRight size={14} /></i></button>
+        <button className="menu-button" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">
+          {menuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+      </div>
     </nav>
   );
 }
@@ -1082,8 +1088,21 @@ function App() {
   const { route, navigate } = useRoute();
   const routeKey = `${route.page}/${route.categoryId ?? ''}/${route.collectionId ?? ''}/${route.storyId ?? ''}`;
   const [title, description] = metaFor(route);
+  const [searchOpen, setSearchOpen] = useState(false);
   useDocumentMeta(title, description);
   useScrollToTopOnRouteChange(routeKey);
+
+  /* Ctrl/Cmd-K is what anyone who searches often reaches for without thinking. */
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   useImageProtection();
   useScrollReveal(routeKey);
   useReadingProgress();
@@ -1091,7 +1110,8 @@ function App() {
     <main>
       <a className="skip-link" href="#main">Skip to content</a>
       <div className="read-bar" aria-hidden="true" />
-      <SiteNav navigate={navigate} current={route.page} />
+      <SiteNav navigate={navigate} current={route.page} onSearch={() => setSearchOpen(true)} />
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} navigate={navigate} />
       {/* keyed so each navigation replays the page-enter fade */}
       <div className="page-shell" id="main" key={routeKey}>
         {route.page === 'home' && <Home navigate={navigate} />}

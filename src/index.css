@@ -44,7 +44,7 @@ em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: itali
 .brand:hover .brand-mark { transform: rotate(-6deg) scale(1.05); }
 .brand-mark img { width: 100%; height: 100%; object-fit: cover; }
 
-.nav-links { display: flex; align-items: center; gap: clamp(20px, 2.4vw, 34px); font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+.nav-links { display: flex; align-items: center; min-width: 0; gap: clamp(14px, 2.2vw, 34px); font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
 .nav-links button { position: relative; padding: 8px 2px; transition: opacity .25s ease; }
 .nav-links button:hover, .nav-cta:hover, footer button:hover, footer a:hover { opacity: .58; }
 .nav-links button::after { content: ''; position: absolute; left: 0; right: 0; bottom: 2px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .38s var(--ease-out); }
@@ -52,7 +52,7 @@ em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: itali
 
 .nav-cta { display: inline-flex; align-items: center; gap: 9px; flex-shrink: 0; font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; border-bottom: 1px solid rgba(29, 32, 29, .6); padding-bottom: 6px; transition: opacity .25s ease; }
 
-.menu-button { display: none; width: 46px; height: 46px; place-items: center; margin-right: -8px; }
+.menu-button { display: none; flex: 0 0 auto; width: 46px; height: 46px; place-items: center; margin-right: -8px; }
 
 /* ----------------------------------------------- PHOTOS + WATERMARKING --- */
 /* Brief: watermark everything, disable right-click and download. */
@@ -651,4 +651,82 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
   }
   .band-aside .body-copy { max-width: none; font-size: 15px; }
   .band-aside-cta { font-size: 12px; padding-bottom: 8px; }
+}
+
+/* ============================================================
+   UNIVERSAL SEARCH
+   Phone: an icon beside the menu, opening a full-screen sheet —
+   a short sheet under a raised keyboard is unusable.
+   Desktop: the same panel as a centred dialog, on the icon or
+   on Ctrl/Cmd-K.
+   ============================================================ */
+
+.nav-actions { display: flex; align-items: center; gap: clamp(8px, 1.4vw, 16px); flex: 0 0 auto; }
+/* flex-shrink:0 is load-bearing — without it the button collapses when the
+   bar gets tight and its icon spills over the Enquire button. */
+.nav-search { flex: 0 0 auto; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; color: #1d201d; transition: background var(--t-mid) ease, transform var(--t-mid) var(--ease-out); }
+.nav-search:hover { background: rgba(29, 32, 29, .07); transform: scale(1.04); }
+.nav-search:active { transform: scale(.96); }
+
+.search-scrim { position: fixed; inset: 0; z-index: 90; display: flex; align-items: flex-start; justify-content: center; padding: clamp(0px, 9vh, 110px) 20px 20px; background: rgba(24, 21, 16, .52); backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px); animation: search-fade .22s var(--ease-out) both; }
+@keyframes search-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.search-panel { width: min(660px, 100%); max-height: min(74vh, 640px); display: flex; flex-direction: column; background: #f7f4ee; border-radius: 6px; overflow: hidden; box-shadow: 0 46px 90px -34px rgba(30, 24, 14, .7), 0 0 0 1px rgba(29, 32, 29, .07); animation: search-rise .3s var(--ease-out) both; }
+@keyframes search-rise { from { opacity: 0; transform: translateY(-12px) scale(.985); } to { opacity: 1; transform: none; } }
+
+.search-field { display: flex; align-items: center; gap: 13px; padding: 17px 18px; border-bottom: 1px solid rgba(29, 32, 29, .1); color: #646b62; }
+.search-field input { flex: 1; min-width: 0; font-family: 'DM Sans', sans-serif; font-size: 17px; color: #1d201d; background: none; border: 0; outline: none; appearance: none; }
+.search-field input::placeholder { color: #8f958c; }
+.search-field input::-webkit-search-cancel-button { display: none; }
+.search-close { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; color: #646b62; transition: background var(--t-fast) ease, color var(--t-fast) ease; }
+.search-close:hover { background: rgba(29, 32, 29, .07); color: #1d201d; }
+
+.search-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+
+.search-hint { padding: 22px 20px 26px; }
+.search-hint .eyebrow { margin: 0 0 13px; }
+.search-chips { display: flex; flex-wrap: wrap; gap: 9px; }
+.search-chips button { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: #5f665e; padding: 9px 14px; border: 1px solid rgba(29, 32, 29, .16); border-radius: 999px; transition: border-color var(--t-fast) ease, background var(--t-fast) ease, transform var(--t-fast) var(--ease-out); }
+.search-chips button:hover { border-color: rgba(29, 32, 29, .4); background: rgba(197, 167, 109, .12); transform: translateY(-1px); }
+
+.search-results { list-style: none; margin: 0; padding: 7px 0 10px; }
+.search-results button { position: relative; display: grid; grid-template-columns: 92px 1fr auto; align-items: baseline; gap: 14px; width: 100%; padding: 13px 20px; text-align: left; transition: background var(--t-fast) ease; }
+.search-results button[data-active='true'] { background: rgba(197, 167, 109, .17); }
+.search-kind { grid-column: 1; grid-row: 1; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .13em; text-transform: uppercase; color: #8a6d3a; }
+.search-title { grid-column: 2; grid-row: 1; font-size: 16px; color: #1d201d; overflow-wrap: anywhere; }
+.search-detail { grid-column: 2; grid-row: 2; font-size: 13px; color: #646b62; }
+/* Explicit column is load-bearing: grid places definite-row items before
+   auto ones, so without it this took column 1 and shunted the label and
+   title a column right, which right-aligned every title. */
+.search-enter { grid-column: 3; grid-row: 1 / span 2; align-self: center; color: #8a6d3a; opacity: 0; transition: opacity var(--t-fast) ease; }
+.search-results button[data-active='true'] .search-enter { opacity: 1; }
+
+.search-empty { padding: 30px 20px 34px; }
+.search-empty p:first-child { margin: 0 0 10px; font-size: 17px; color: #1d201d; }
+.search-empty .body-copy { max-width: 42ch; }
+.search-ask { display: inline-flex; align-items: center; gap: 10px; margin-top: 18px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; padding-bottom: 7px; border-bottom: 1px solid rgba(29, 32, 29, .5); transition: opacity var(--t-fast) ease; }
+.search-ask:hover { opacity: .62; }
+
+.search-foot { display: flex; gap: 20px; padding: 11px 20px; border-top: 1px solid rgba(29, 32, 29, .09); background: rgba(29, 32, 29, .028); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #6e756c; }
+.search-foot kbd { font: inherit; background: #ece7dd; border: 1px solid rgba(29, 32, 29, .16); border-radius: 3px; padding: 1px 6px; margin-right: 5px; }
+
+@media (max-width: 860px) {
+  /* Order matters here: search sits immediately beside the menu button. */
+  .nav-actions { gap: 2px; }
+  .nav-search { width: 46px; height: 46px; }
+  .search-foot { display: none; }          /* no physical keyboard to hint at */
+  .search-scrim { padding: 0; }
+  .search-panel { width: 100%; max-height: 100%; height: 100dvh; border-radius: 0; }
+  .search-field { padding: 14px 14px; }
+  .search-field input { font-size: 16px; }  /* 16px stops iOS zooming the page */
+  .search-results button { grid-template-columns: 1fr auto; padding: 14px 16px; }
+  .search-kind { grid-column: 1; grid-row: 1; }
+  .search-title { grid-column: 1; grid-row: 2; }
+  .search-detail { grid-column: 1; grid-row: 3; }
+  .search-enter { grid-column: 2; grid-row: 1 / span 3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-scrim, .search-panel { animation: none; }
+  .nav-search:hover, .search-chips button:hover { transform: none; }
 }
