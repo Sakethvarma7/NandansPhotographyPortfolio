@@ -654,79 +654,140 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 }
 
 /* ============================================================
-   UNIVERSAL SEARCH
-   Phone: an icon beside the menu, opening a full-screen sheet —
-   a short sheet under a raised keyboard is unusable.
-   Desktop: the same panel as a centred dialog, on the icon or
-   on Ctrl/Cmd-K.
+   UNIVERSAL SEARCH — Liquid Glass
+   Modelled on the iOS 26 material: it is not "transparent", it
+   is a lens. Three things do the work, in order of importance:
+     1. a backdrop that is blurred AND saturated, so colour from
+        behind bleeds through instead of going grey;
+     2. a specular rim — a gradient-masked 1px border, brightest
+        where a light above-left would catch it;
+     3. an inner top highlight, which is what reads as thickness.
+   Tinted warm rather than the usual cold white, so it belongs to
+   this palette instead of arriving from someone else's app.
    ============================================================ */
 
 .nav-actions { display: flex; align-items: center; gap: clamp(8px, 1.4vw, 16px); flex: 0 0 auto; }
 /* flex-shrink:0 is load-bearing — without it the button collapses when the
    bar gets tight and its icon spills over the Enquire button. */
-.nav-search { flex: 0 0 auto; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; color: #1d201d; transition: background var(--t-mid) ease, transform var(--t-mid) var(--ease-out); }
-.nav-search:hover { background: rgba(29, 32, 29, .07); transform: scale(1.04); }
-.nav-search:active { transform: scale(.96); }
+.nav-search { position: relative; flex: 0 0 auto; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 999px; color: #1d201d; overflow: hidden;
+  background: rgba(255, 253, 247, .5);
+  backdrop-filter: blur(14px) saturate(180%); -webkit-backdrop-filter: blur(14px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), inset 0 -1px 1px rgba(120, 100, 66, .1), 0 1px 3px rgba(60, 48, 30, .1);
+  transition: background var(--t-mid) ease, transform var(--t-mid) var(--ease-out), box-shadow var(--t-mid) ease; }
+.nav-search::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(145deg, rgba(255, 255, 255, .95), rgba(255, 255, 255, .18) 42%, transparent 62%, rgba(197, 167, 109, .4));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude; }
+.nav-search:hover { background: rgba(255, 253, 247, .78); transform: scale(1.05); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .95), 0 4px 14px -4px rgba(60, 48, 30, .28); }
+.nav-search:active { transform: scale(.94); }
 
-.search-scrim { position: fixed; inset: 0; z-index: 90; display: flex; align-items: flex-start; justify-content: center; padding: clamp(0px, 9vh, 110px) 20px 20px; background: rgba(24, 21, 16, .52); backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px); animation: search-fade .22s var(--ease-out) both; }
+.search-scrim { position: fixed; inset: 0; z-index: 90; display: flex; align-items: flex-start; justify-content: center; padding: clamp(0px, 9vh, 110px) 20px 20px;
+  background: rgba(38, 31, 20, .34);
+  backdrop-filter: blur(26px) saturate(140%) brightness(.92); -webkit-backdrop-filter: blur(26px) saturate(140%) brightness(.92);
+  animation: search-fade .26s var(--ease-out) both; }
 @keyframes search-fade { from { opacity: 0; } to { opacity: 1; } }
 
-.search-panel { width: min(660px, 100%); max-height: min(74vh, 640px); display: flex; flex-direction: column; background: #f7f4ee; border-radius: 6px; overflow: hidden; box-shadow: 0 46px 90px -34px rgba(30, 24, 14, .7), 0 0 0 1px rgba(29, 32, 29, .07); animation: search-rise .3s var(--ease-out) both; }
-@keyframes search-rise { from { opacity: 0; transform: translateY(-12px) scale(.985); } to { opacity: 1; transform: none; } }
+.search-panel { position: relative; width: min(660px, 100%); max-height: min(74vh, 640px); display: flex; flex-direction: column; overflow: hidden;
+  border-radius: 30px;
+  /* Kept substantially opaque on purpose: a truly see-through panel would put
+     photographs behind the result text and wreck its contrast. */
+  background: linear-gradient(158deg, rgba(252, 250, 245, .88), rgba(244, 240, 231, .82));
+  backdrop-filter: blur(44px) saturate(190%); -webkit-backdrop-filter: blur(44px) saturate(190%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .9),
+    inset 0 -1px 2px rgba(140, 118, 78, .14),
+    0 2px 8px rgba(40, 32, 20, .1),
+    0 28px 60px -22px rgba(40, 32, 20, .45),
+    0 60px 110px -40px rgba(40, 32, 20, .5);
+  animation: search-rise .42s var(--ease-out) both; }
 
-.search-field { display: flex; align-items: center; gap: 13px; padding: 17px 18px; border-bottom: 1px solid rgba(29, 32, 29, .1); color: #646b62; }
+/* The specular rim. Brightest top-left, with a warm gold catch bottom-right. */
+.search-panel::before { content: ''; position: absolute; inset: 0; z-index: 3; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, .3) 26%, rgba(255, 255, 255, .06) 48%, rgba(197, 167, 109, .3) 78%, rgba(255, 255, 255, .55) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude; }
+
+/* A slow sheen drifting across the glass — the "liquid" part. */
+.search-panel::after { content: ''; position: absolute; top: -60%; left: -30%; width: 60%; height: 220%; z-index: 2; pointer-events: none;
+  background: linear-gradient(96deg, transparent, rgba(255, 255, 255, .5), transparent);
+  transform: rotate(8deg); animation: sheen 7.5s ease-in-out 1.1s infinite; opacity: 0; }
+@keyframes sheen {
+  0%   { opacity: 0; transform: translateX(0) rotate(8deg); }
+  12%  { opacity: .55; }
+  38%  { opacity: 0; transform: translateX(320%) rotate(8deg); }
+  100% { opacity: 0; transform: translateX(320%) rotate(8deg); }
+}
+@keyframes search-rise { from { opacity: 0; transform: translateY(-14px) scale(.96); } to { opacity: 1; transform: none; } }
+
+.search-field { position: relative; z-index: 4; display: flex; align-items: center; gap: 13px; margin: 10px 10px 0; padding: 15px 16px; border-radius: 22px; color: #5f665e;
+  background: rgba(255, 255, 255, .5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), inset 0 0 0 1px rgba(255, 255, 255, .45), 0 1px 2px rgba(60, 48, 30, .06); }
 .search-field input { flex: 1; min-width: 0; font-family: 'DM Sans', sans-serif; font-size: 17px; color: #1d201d; background: none; border: 0; outline: none; appearance: none; }
 .search-field input::placeholder { color: #8f958c; }
 .search-field input::-webkit-search-cancel-button { display: none; }
-.search-close { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; color: #646b62; transition: background var(--t-fast) ease, color var(--t-fast) ease; }
-.search-close:hover { background: rgba(29, 32, 29, .07); color: #1d201d; }
+.search-close { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 999px; color: #646b62; transition: background var(--t-fast) ease, color var(--t-fast) ease, transform var(--t-fast) var(--ease-out); }
+.search-close:hover { background: rgba(255, 255, 255, .8); color: #1d201d; transform: scale(1.06); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9); }
 
-.search-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.search-body { position: relative; z-index: 4; flex: 1; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 6px 10px 10px; }
 
-.search-hint { padding: 22px 20px 26px; }
+.search-hint { padding: 16px 8px 10px; }
 .search-hint .eyebrow { margin: 0 0 13px; }
 .search-chips { display: flex; flex-wrap: wrap; gap: 9px; }
-.search-chips button { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: #5f665e; padding: 9px 14px; border: 1px solid rgba(29, 32, 29, .16); border-radius: 999px; transition: border-color var(--t-fast) ease, background var(--t-fast) ease, transform var(--t-fast) var(--ease-out); }
-.search-chips button:hover { border-color: rgba(29, 32, 29, .4); background: rgba(197, 167, 109, .12); transform: translateY(-1px); }
+.search-chips button { position: relative; overflow: hidden; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: #565d55; padding: 10px 16px; border-radius: 999px;
+  background: rgba(255, 255, 255, .55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .95), inset 0 0 0 1px rgba(255, 255, 255, .5), 0 1px 3px rgba(60, 48, 30, .08);
+  transition: background var(--t-fast) ease, transform var(--t-fast) var(--ease-out), box-shadow var(--t-fast) ease, color var(--t-fast) ease; }
+.search-chips button:hover { background: rgba(197, 167, 109, .3); color: #3a3f38; transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 6px 14px -6px rgba(120, 96, 50, .5); }
+.search-chips button:active { transform: translateY(0) scale(.97); }
 
-.search-results { list-style: none; margin: 0; padding: 7px 0 10px; }
-.search-results button { position: relative; display: grid; grid-template-columns: 92px 1fr auto; align-items: baseline; gap: 14px; width: 100%; padding: 13px 20px; text-align: left; transition: background var(--t-fast) ease; }
-.search-results button[data-active='true'] { background: rgba(197, 167, 109, .17); }
+.search-results { list-style: none; margin: 0; padding: 2px 0 4px; }
+.search-results button { position: relative; display: grid; grid-template-columns: 92px 1fr auto; align-items: baseline; gap: 14px; width: 100%; padding: 13px 14px; text-align: left; border-radius: 18px; transition: background var(--t-fast) ease, box-shadow var(--t-fast) ease; }
+.search-results button[data-active='true'] { background: linear-gradient(140deg, rgba(255, 255, 255, .75), rgba(197, 167, 109, .26)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .95), inset 0 0 0 1px rgba(255, 255, 255, .5), 0 4px 14px -6px rgba(120, 96, 50, .35); }
 .search-kind { grid-column: 1; grid-row: 1; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .13em; text-transform: uppercase; color: #8a6d3a; }
 .search-title { grid-column: 2; grid-row: 1; font-size: 16px; color: #1d201d; overflow-wrap: anywhere; }
 .search-detail { grid-column: 2; grid-row: 2; font-size: 13px; color: #646b62; }
-/* Explicit column is load-bearing: grid places definite-row items before
-   auto ones, so without it this took column 1 and shunted the label and
-   title a column right, which right-aligned every title. */
-.search-enter { grid-column: 3; grid-row: 1 / span 2; align-self: center; color: #8a6d3a; opacity: 0; transition: opacity var(--t-fast) ease; }
-.search-results button[data-active='true'] .search-enter { opacity: 1; }
+/* Explicit column is load-bearing: grid places definite-row items before auto
+   ones, so without it this took column 1 and right-aligned every title. */
+.search-enter { grid-column: 3; grid-row: 1 / span 2; align-self: center; color: #8a6d3a; opacity: 0; transform: translateX(-4px); transition: opacity var(--t-fast) ease, transform var(--t-fast) var(--ease-out); }
+.search-results button[data-active='true'] .search-enter { opacity: 1; transform: none; }
 
-.search-empty { padding: 30px 20px 34px; }
+.search-empty { padding: 26px 12px 30px; }
 .search-empty p:first-child { margin: 0 0 10px; font-size: 17px; color: #1d201d; }
 .search-empty .body-copy { max-width: 42ch; }
-.search-ask { display: inline-flex; align-items: center; gap: 10px; margin-top: 18px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; padding-bottom: 7px; border-bottom: 1px solid rgba(29, 32, 29, .5); transition: opacity var(--t-fast) ease; }
-.search-ask:hover { opacity: .62; }
+.search-ask { display: inline-flex; align-items: center; gap: 10px; margin-top: 18px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #3a3f38; padding: 11px 18px; border-radius: 999px;
+  background: rgba(255, 255, 255, .6); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .95), inset 0 0 0 1px rgba(255, 255, 255, .5), 0 2px 6px rgba(60, 48, 30, .1);
+  transition: background var(--t-fast) ease, transform var(--t-fast) var(--ease-out); }
+.search-ask:hover { background: rgba(197, 167, 109, .32); transform: translateY(-2px); }
 
-.search-foot { display: flex; gap: 20px; padding: 11px 20px; border-top: 1px solid rgba(29, 32, 29, .09); background: rgba(29, 32, 29, .028); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #6e756c; }
-.search-foot kbd { font: inherit; background: #ece7dd; border: 1px solid rgba(29, 32, 29, .16); border-radius: 3px; padding: 1px 6px; margin-right: 5px; }
+.search-foot { position: relative; z-index: 4; display: flex; gap: 20px; padding: 12px 20px; border-top: 1px solid rgba(255, 255, 255, .55); background: rgba(255, 255, 255, .26); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #6e756c; }
+.search-foot kbd { font: inherit; background: rgba(255, 255, 255, .8); border-radius: 6px; padding: 2px 7px; margin-right: 5px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 0 0 1px rgba(140, 118, 78, .18), 0 1px 2px rgba(60, 48, 30, .12); }
 
 @media (max-width: 860px) {
-  /* Order matters here: search sits immediately beside the menu button. */
-  .nav-actions { gap: 2px; }
+  .nav-actions { gap: 4px; }
   .nav-search { width: 46px; height: 46px; }
   .search-foot { display: none; }          /* no physical keyboard to hint at */
   .search-scrim { padding: 0; }
   .search-panel { width: 100%; max-height: 100%; height: 100dvh; border-radius: 0; }
-  .search-field { padding: 14px 14px; }
+  .search-panel::before, .search-panel::after { display: none; }
+  .search-field { margin: 8px 8px 0; padding: 13px 14px; }
   .search-field input { font-size: 16px; }  /* 16px stops iOS zooming the page */
-  .search-results button { grid-template-columns: 1fr auto; padding: 14px 16px; }
+  .search-results button { grid-template-columns: 1fr auto; padding: 14px 14px; }
   .search-kind { grid-column: 1; grid-row: 1; }
   .search-title { grid-column: 1; grid-row: 2; }
   .search-detail { grid-column: 1; grid-row: 3; }
   .search-enter { grid-column: 2; grid-row: 1 / span 3; }
 }
 
+/* Where the backdrop cannot be blurred, fall back to a solid panel rather than
+   leaving text floating over whatever happens to be behind it. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .search-scrim { background: rgba(38, 31, 20, .82); }
+  .search-panel { background: #f7f4ee; }
+  .nav-search { background: rgba(29, 32, 29, .06); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .search-scrim, .search-panel { animation: none; }
-  .nav-search:hover, .search-chips button:hover { transform: none; }
+  .search-panel::after { animation: none; opacity: 0; }
+  .nav-search:hover, .search-chips button:hover, .search-ask:hover, .search-close:hover { transform: none; }
 }
