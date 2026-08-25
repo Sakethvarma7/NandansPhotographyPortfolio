@@ -38,6 +38,8 @@ const IDLE_RATE = 0.00042;
 const IDLE_SWING = 2.45;
 const EASE_BASE = 0.001;
 const COMPACT_AT = 650;
+/* Finger travel that advances one card. Low enough that a short flick lands. */
+const DRAG_PER_CARD = 76;
 
 type Card = { src: string; alt: string; name: string; place: string };
 
@@ -69,7 +71,7 @@ export default function FilmstripHero() {
     pointerX: 0, pointerY: 0,
     engaged: false,
     lastInput: 0,
-    drag: null as null | { x0: number; base: number; moved: number },
+    drag: null as null | { x0: number; y0: number; base: number; moved: number },
   });
 
   const wrappedDelta = useCallback((index: number, phase: number) => {
@@ -179,20 +181,29 @@ export default function FilmstripHero() {
     const s = st.current;
     if (!stage) return;
     const rect = stage.getBoundingClientRect();
+    const compact = window.innerWidth < COMPACT_AT;
 
     if (s.drag) {
-      const dx = event.clientX - s.drag.x0;
-      s.drag.moved = Math.max(s.drag.moved, Math.abs(dx));
-      s.target = s.drag.base - dx / (rect.width / count) * 0.85;
+      /* The compact deck runs vertically, so the finger does too. */
+      const travel = compact ? event.clientY - s.drag.y0 : event.clientX - s.drag.x0;
+      s.drag.moved = Math.max(s.drag.moved, Math.abs(travel));
+      s.target = s.drag.base - travel / DRAG_PER_CARD;
       s.lastInput = performance.now();
       return;
     }
+
+    /*
+     * Pointer position tilts the deck and moves the light. It deliberately does
+     * NOT touch the phase: driving the centred card from the cursor meant the
+     * picture changed as you moved across the hero and snapped back the moment
+     * you left it. Which photograph is showing changes only when asked —
+     * arrows, keys, a click, a drag, or autoplay.
+     */
     const nx = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width - 0.5) * 2));
     const ny = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height - 0.5) * 2));
     s.pointerX = nx;
     s.pointerY = ny;
     s.engaged = true;
-    s.target = s.base + (window.innerWidth < COMPACT_AT ? ny * 2.2 : nx * 3.1);
     s.lastInput = performance.now();
     stage.style.setProperty('--pointer-x', `${(nx + 1) * 50}%`);
   };
@@ -202,14 +213,21 @@ export default function FilmstripHero() {
     s.engaged = false;
     s.pointerX = 0;
     s.pointerY = 0;
-    s.target = s.base;
+    /* No phase to restore — the tilt simply relaxes back to level. */
     stageRef.current?.style.setProperty('--pointer-x', '50%');
   };
 
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
+    /*
+     * Only a gesture that starts ON a photograph drives the deck. Anywhere else
+     * on the stage is left to the browser, so a thumb landing on the paper
+     * scrolls the page to the next section instead of being swallowed here.
+     */
+    const onCard = (event.target as Element | null)?.closest('.strip-card');
+    if (!onCard) return;
     const s = st.current;
-    s.drag = { x0: event.clientX, base: s.target, moved: 0 };
+    s.drag = { x0: event.clientX, y0: event.clientY, base: s.target, moved: 0 };
     stageRef.current?.setPointerCapture(event.pointerId);
   };
 

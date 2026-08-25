@@ -766,7 +766,9 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
   width: 100%; height: clamp(430px, 54vh, 560px);
   overflow: hidden; isolation: isolate;
   perspective: 1450px;
-  cursor: ew-resize; touch-action: pan-y;
+  /* The stage itself claims no gestures. A touch on the paper belongs to the
+     page, so it scrolls on to the next section. */
+  touch-action: auto;
   -webkit-user-select: none; user-select: none;
   background:
     linear-gradient(90deg, rgba(80, 58, 31, .08) 1px, transparent 1px) 50% 0 / 25% 100%,
@@ -813,8 +815,12 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
     inset 0 0 0 1px rgba(255, 255, 255, .64);
   appearance: none; outline: none;
   transform-style: preserve-3d; will-change: transform, opacity, filter;
-  cursor: pointer;
+  /* Only the photographs take the gesture, and once one does it owns both
+     axes — the compact deck runs vertically, so the drag does too. */
+  touch-action: none;
+  cursor: grab;
 }
+.strip-card:active { cursor: grabbing; }
 /* An inner rule that firms up as the card comes into focus. */
 .strip-card::before {
   content: ''; position: absolute; inset: 5px; z-index: 3; pointer-events: none;
@@ -858,7 +864,6 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
   .strip { min-height: auto; padding: 36px 0 42px; }
   .strip-stage {
     height: clamp(420px, 62vh, 540px);
-    cursor: ns-resize; touch-action: pan-x;
     background:
       linear-gradient(90deg, rgba(80, 58, 31, .08) 1px, transparent 1px) 50% 0 / 50% 100%,
       repeating-linear-gradient(0deg, transparent 0, transparent 87px, rgba(72, 52, 30, .13) 88px, transparent 89px),
