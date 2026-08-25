@@ -82,11 +82,28 @@ em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: itali
 .band { padding: 74px 6vw; }
 .band + .band { border-top: 1px solid rgba(29, 32, 29, .08); }
 .band.no-head { padding: 20px 8vw 110px; }
-.band-head { display: flex; align-items: center; gap: 26px; margin-bottom: 40px; }
-.band-head h2 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-size: clamp(26px, 3vw, 40px); letter-spacing: -.01em; white-space: nowrap; }
+/*
+ * Heading, subtitle and images as one unit.
+ *
+ * This was a flex row with the rule set to flex:1 BETWEEN the heading and the
+ * subtitle, which pushed them to opposite ends — measured 717px apart, with
+ * 665px of rule in the gap. No amount of resizing fixes a pairing that far
+ * apart, so the subtitle now sits directly under its heading and the rule
+ * takes the space beside them instead of between them.
+ */
+.band-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 24px; row-gap: 7px;
+  margin-bottom: 26px;
+}
+.band-head h2 { grid-area: 1 / 1; margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-size: clamp(26px, 3vw, 40px); letter-spacing: -.01em; }
 .band-head h2 em { font-size: .82em; }
-.band-rule { flex: 1; height: 1px; background: rgba(29, 32, 29, .22); }
-.band-head p { margin: 0; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #646b62; white-space: nowrap; }
+.band-rule { grid-area: 1 / 2; height: 1px; background: rgba(29, 32, 29, .22); }
+/* 12px rather than 10px, with the tracking eased back: at 10px and .16em it
+   read as a caption for something else rather than as this heading's own line. */
+.band-head p { grid-area: 2 / 1; margin: 0; font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .13em; text-transform: uppercase; color: #5a6158; }
 
 .band-grid { display: grid; gap: 22px; grid-template-columns: repeat(2, 1fr); }
 .band-grid[data-count='3'] { grid-template-columns: repeat(3, 1fr); }
@@ -280,8 +297,9 @@ footer { background: #26211a; color: #e8e2d4; padding: 55px 4.5vw 25px; display:
   .hero { min-height: auto; padding: 44px 0 50px; }
 
   .band { padding: 48px 6vw; }
-  .band-head { flex-direction: column; align-items: flex-start; gap: 12px; }
-  .band-head h2 { white-space: normal; }
+  .band-head { grid-template-columns: 1fr; row-gap: 6px; margin-bottom: 20px; }
+  .band-head h2 { grid-area: auto; }
+  .band-head p { grid-area: auto; font-size: 11px; }
   .band-rule { display: none; }
   /* Collections sit side by side and swipe, for EVERY category — never stacked. */
   .band-grid, .band-grid[data-count='1'], .band-grid[data-count='3'] { display: flex; grid-template-columns: none; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; -ms-overflow-style: none; margin: 0 -6vw; padding: 0 6vw 4px; }
