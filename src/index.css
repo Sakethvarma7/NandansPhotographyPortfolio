@@ -34,9 +34,16 @@ em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: itali
   background: rgba(244, 241, 235, .86);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(29, 32, 29, .07);
-  transition: box-shadow .4s var(--ease-out), padding .4s var(--ease-out);
+  transition: box-shadow .4s var(--ease-out);
 }
-:root.is-scrolled .nav-shell { padding-top: 11px; padding-bottom: 11px; box-shadow: 0 8px 28px -16px rgba(29, 32, 29, .3); }
+/*
+ * Scrolling must NOT change this bar's height. The nav is sticky, so it sits in
+ * flow: shrinking it shortened the document, which pulled scrollTop back down
+ * across the threshold that had just been crossed, which restored the height —
+ * a loop that strobed at 60fps wherever the page came to rest near the line.
+ * Only the shadow changes now, which paints without touching layout.
+ */
+:root.is-scrolled .nav-shell { box-shadow: 0 8px 28px -16px rgba(29, 32, 29, .3); }
 
 .brand, .footer-brand { display: flex; align-items: center; gap: 12px; font-size: 14px; letter-spacing: .17em; font-weight: 700; line-height: 1.1; flex-shrink: 0; }
 .brand small, .footer-brand small { display: block; font-size: 8px; letter-spacing: .26em; font-weight: 400; margin-top: 5px; }
@@ -349,7 +356,6 @@ footer { background: #26211a; color: #e8e2d4; padding: 55px 4.5vw 25px; display:
 .read-bar { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 60; pointer-events: none; background: linear-gradient(90deg, #c5a76d, #8a6d3a); transform: scaleX(var(--read, 0)); transform-origin: left; opacity: 0; transition: opacity .4s ease; }
 :root.is-scrolled .read-bar { opacity: 1; }
 .nav-shell { transition: box-shadow .4s ease, background .4s ease; }
-:root.is-scrolled .nav-shell { box-shadow: 0 1px 26px -8px rgba(29, 32, 29, .22); }
 
 /* Analog grain. Fixed, tiny, and under everything interactive — the design
    system's "warm analog" note, at an opacity you feel rather than see. */

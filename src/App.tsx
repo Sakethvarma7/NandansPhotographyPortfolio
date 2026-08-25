@@ -188,7 +188,12 @@ function useReadingProgress() {
       const doc = document.documentElement;
       const span = doc.scrollHeight - doc.clientHeight;
       doc.style.setProperty('--read', span > 0 ? String(doc.scrollTop / span) : '0');
-      doc.classList.toggle('is-scrolled', doc.scrollTop > 24);
+      /* Hysteresis, so the state cannot chatter around a single threshold:
+         it engages well down the page and only lets go near the very top. */
+      const y = doc.scrollTop;
+      const on = doc.classList.contains('is-scrolled');
+      if (!on && y > 64) doc.classList.add('is-scrolled');
+      else if (on && y < 16) doc.classList.remove('is-scrolled');
     };
     const onScroll = () => { if (!frame) frame = requestAnimationFrame(write); };
     write();
