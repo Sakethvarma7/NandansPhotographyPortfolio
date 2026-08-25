@@ -1,0 +1,654 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400&family=DM+Sans:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* One motion vocabulary for the whole site. Consistency is what reads as
+     "designed" — mismatched curves are what read as "template". */
+  --ease-out: cubic-bezier(.22, 1, .36, 1);      /* things arriving */
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);   /* things moving between states */
+  --t-fast: .22s;
+  --t-mid: .42s;
+  --t-slow: .68s;
+  font-family: 'DM Sans', sans-serif; color: #1d201d; background: #f4f1eb; font-synthesis: none; text-rendering: optimizeLegibility; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 320px; background: #f4f1eb; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; }
+img { display: block; max-width: 100%; }
+em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: italic; }
+/* #8b918a measured 2.89:1 on the cream ground — below AA. #646b62 is 4.6:1. */
+.eyebrow { font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .14em; font-size: 11px; color: #646b62; margin: 0 0 22px; }
+.body-copy { font-size: 15px; line-height: 1.7; max-width: 390px; color: #686f66; margin: 0; }
+
+/* ---------------------------------------------------------------- NAV --- */
+/* Back to the original cream bar on dark ink. Only the type sizes are held at
+   the readable values — the old 10px links were the thing you flagged first. */
+.nav-shell {
+  position: sticky; top: 0; z-index: 50; width: 100%;
+  padding: 16px clamp(16px, 4.5vw, 56px);
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  color: #1d201d;
+  background: rgba(244, 241, 235, .86);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(29, 32, 29, .07);
+  transition: box-shadow .4s var(--ease-out), padding .4s var(--ease-out);
+}
+:root.is-scrolled .nav-shell { padding-top: 11px; padding-bottom: 11px; box-shadow: 0 8px 28px -16px rgba(29, 32, 29, .3); }
+
+.brand, .footer-brand { display: flex; align-items: center; gap: 12px; font-size: 14px; letter-spacing: .17em; font-weight: 700; line-height: 1.1; flex-shrink: 0; }
+.brand small, .footer-brand small { display: block; font-size: 8px; letter-spacing: .26em; font-weight: 400; margin-top: 5px; }
+.brand-mark { width: 38px; height: 38px; display: block; overflow: hidden; background: #c5a76d; border-radius: 50%; flex-shrink: 0; transition: transform .5s var(--ease-out); }
+.brand:hover .brand-mark { transform: rotate(-6deg) scale(1.05); }
+.brand-mark img { width: 100%; height: 100%; object-fit: cover; }
+
+.nav-links { display: flex; align-items: center; gap: clamp(20px, 2.4vw, 34px); font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+.nav-links button { position: relative; padding: 8px 2px; transition: opacity .25s ease; }
+.nav-links button:hover, .nav-cta:hover, footer button:hover, footer a:hover { opacity: .58; }
+.nav-links button::after { content: ''; position: absolute; left: 0; right: 0; bottom: 2px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .38s var(--ease-out); }
+.nav-links button:hover::after { transform: scaleX(1); }
+
+.nav-cta { display: inline-flex; align-items: center; gap: 9px; flex-shrink: 0; font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; border-bottom: 1px solid rgba(29, 32, 29, .6); padding-bottom: 6px; transition: opacity .25s ease; }
+
+.menu-button { display: none; width: 46px; height: 46px; place-items: center; margin-right: -8px; }
+
+/* ----------------------------------------------- PHOTOS + WATERMARKING --- */
+/* Brief: watermark everything, disable right-click and download. */
+.shot { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; }
+.shot img { width: 100%; height: 100%; object-fit: cover; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+.shot-mark { position: absolute; right: 11px; bottom: 9px; z-index: 3; font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: .17em; text-transform: uppercase; color: rgba(255, 255, 255, .58); text-shadow: 0 1px 3px rgba(0, 0, 0, .55); pointer-events: none; white-space: nowrap; }
+
+/* ---------------------------------------------------- HOME — SLIDESHOW --- */
+.hero { position: relative; min-height: calc(100dvh - 74px); padding: 70px 0 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #b3a894; overflow: hidden; }
+.hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 38%, rgba(238, 231, 216, .5), transparent 62%); pointer-events: none; }
+
+.hero-wordmark { position: relative; z-index: 3; display: flex; align-items: flex-start; gap: 16px; color: #fdfaf3; text-align: center; margin-bottom: -46px; }
+.hero-wordmark span { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .18em; opacity: .8; padding-top: 12px; }
+.hero-wordmark h1 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-size: clamp(34px, 5vw, 62px); line-height: .95; letter-spacing: .04em; text-shadow: 0 2px 24px rgba(60, 48, 30, .35); }
+.hero-wordmark em { display: block; font-size: .5em; letter-spacing: .02em; margin-top: 4px; }
+
+/*
+ * Stepped stage. Frames are absolutely positioned and placed by their signed
+ * offset from centre, so the deck can wrap forever without ever reflowing.
+ * touch-action: pan-y keeps vertical page scrolling with the browser.
+ */
+.hero-stage { position: relative; z-index: 1; width: 100%; height: 470px; --gap: 300px; touch-action: pan-y; cursor: grab; -webkit-user-select: none; user-select: none; }
+.hero-stage.is-dragging { cursor: grabbing; }
+.hero-stage:focus-visible { outline: 1px solid rgba(253, 250, 243, .8); outline-offset: 8px; border-radius: 3px; }
+
+/* easeOutQuint: leaves fast, lands soft. Interrupting it mid-flight re-eases
+   from wherever the frame currently is, so rapid swipes stay continuous. */
+.hero-frame { position: absolute; left: 50%; top: 50%; width: 300px; height: 418px; border-radius: 2px; overflow: hidden;
+  z-index: var(--z, 1); opacity: var(--f, 1);
+  transform: translate3d(calc(-50% + (var(--o) * var(--gap)) + var(--drag, 0px)), -50%, 0) scale(var(--s, 1));
+  box-shadow: 0 30px 60px -28px rgba(46, 38, 24, .66);
+  transition: transform .62s cubic-bezier(.22, 1, .36, 1), opacity .62s cubic-bezier(.22, 1, .36, 1), box-shadow .62s ease;
+  will-change: transform, opacity; backface-visibility: hidden; }
+/* Under the finger the deck must track exactly, not ease towards the finger. */
+.hero-stage.is-dragging .hero-frame { transition: none; }
+.hero-frame .shot img { filter: saturate(.94); transform: translateZ(0); }
+.hero-frame.is-active { box-shadow: 0 46px 88px -30px rgba(46, 38, 24, .8); }
+.hero-frame.is-far { opacity: 0; pointer-events: none; }
+
+/* Flanking the centre frame, the way the reference site does it: bare glyphs,
+   no chrome, no counter. Generous hit area for touch. */
+.hero-nav { position: relative; z-index: 4; display: flex; justify-content: space-between; align-items: center; width: min(640px, 76vw); margin: -6px auto 0; color: #fdfaf3; }
+.hero-nav button { width: 48px; height: 48px; display: grid; place-items: center; opacity: .72; transition: opacity .3s ease, transform .35s cubic-bezier(.22, 1, .36, 1); }
+.hero-nav button:hover { opacity: 1; }
+.hero-nav button:first-child:hover { transform: translateX(-5px); }
+.hero-nav button:last-child:hover { transform: translateX(5px); }
+.hero-nav button:focus-visible { outline: 1px solid #fdfaf3; outline-offset: 2px; border-radius: 50%; }
+
+.hero-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.hero-title { position: relative; z-index: 3; text-align: center; color: #fdfaf3; margin-top: 34px; }
+.hero-title h2 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-style: italic; font-size: clamp(32px, 4.6vw, 56px); letter-spacing: .01em; }
+.hero-title h2 span { font-style: normal; letter-spacing: .06em; }
+.hero-title p { margin: 12px 0 0; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; opacity: .82; }
+
+.hero-scroll { position: relative; z-index: 3; display: flex; align-items: center; gap: 10px; margin-top: 40px; color: #fdfaf3; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; opacity: .8; transition: opacity .25s ease; }
+.hero-scroll:hover { opacity: 1; }
+
+/* -------------------------------------------- HOME — CATEGORY SECTIONS --- */
+.collections { padding: 20px 0 0; }
+.band { padding: 74px 6vw; }
+.band + .band { border-top: 1px solid rgba(29, 32, 29, .08); }
+.band.no-head { padding: 20px 8vw 110px; }
+.band-head { display: flex; align-items: center; gap: 26px; margin-bottom: 40px; }
+.band-head h2 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-size: clamp(26px, 3vw, 40px); letter-spacing: -.01em; white-space: nowrap; }
+.band-head h2 em { font-size: .82em; }
+.band-rule { flex: 1; height: 1px; background: rgba(29, 32, 29, .22); }
+.band-head p { margin: 0; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #646b62; white-space: nowrap; }
+
+.band-grid { display: grid; gap: 22px; grid-template-columns: repeat(2, 1fr); }
+.band-grid[data-count='3'] { grid-template-columns: repeat(3, 1fr); }
+.band-card { position: relative; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 2px; color: #fff; display: block; }
+.band-card .shot img { transition: transform .8s cubic-bezier(.2, .7, .2, 1), filter .5s ease; }
+.band-card:hover .shot img { transform: scale(1.05); filter: brightness(.82); }
+.band-card-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(12, 15, 12, .55), rgba(12, 15, 12, .12) 55%); }
+/* Label sits just below centre so a play button can share the middle without
+   the two colliding — kept uniform whether or not the card has one. */
+.band-card-label { position: absolute; left: 50%; top: calc(50% + 34px); transform: translate(-50%, -50%); z-index: 2; font-family: 'Playfair Display', serif; font-size: clamp(20px, 2.2vw, 34px); letter-spacing: .04em; text-transform: uppercase; text-shadow: 0 2px 18px rgba(0, 0, 0, .4); white-space: nowrap; }
+.band-card-count { position: absolute; left: 24px; bottom: 22px; z-index: 2; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; opacity: .85; }
+.band-card-arrow { position: absolute; right: 22px; top: 22px; z-index: 2; opacity: 0; transform: translate(-6px, 6px); transition: opacity .3s ease, transform .3s ease; }
+.band-card:hover .band-card-arrow { opacity: 1; transform: translate(0, 0); }
+.band-card .play-button { top: calc(50% - 34px); }
+
+.home-note { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; padding: 60px 6vw 90px; margin-top: 20px; border-top: 1px solid rgba(29, 32, 29, .12); }
+.home-note > span { font-family: 'DM Mono', monospace; font-size: 11px; color: #646b62; }
+.home-note p { font-family: 'Playfair Display', serif; font-style: italic; font-size: 20px; color: #5a6159; margin: 0; max-width: 520px; }
+.home-note-cta { margin-left: auto; display: inline-flex; align-items: center; gap: 12px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid rgba(29, 32, 29, .55); transition: opacity .25s ease; }
+.home-note-cta:hover { opacity: .6; }
+
+/* --------------------------------------------------------- PAGE SHELL --- */
+.page-shell { min-height: 80vh; }
+/* The marker column is gone but the indent it created is part of the layout,
+   so the content stays parked in the second track. */
+.page-intro { padding: 130px 8vw 66px; display: grid; grid-template-columns: 16% 1fr; gap: 6%; }
+.page-intro > div { grid-column: 2; }
+.page-intro h1 { font-size: clamp(48px, 6.5vw, 104px); line-height: .9; letter-spacing: -.06em; font-weight: 400; margin: 0 0 28px; max-width: 900px; }
+
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #646b62; margin-bottom: 28px; }
+.crumbs span { display: inline-flex; align-items: center; gap: 9px; }
+.crumbs button { transition: color .25s ease; }
+.crumbs button:hover { color: #1d201d; }
+.crumbs i { font-style: normal; color: #1d201d; }
+.crumbs em { font-style: normal; opacity: .45; }
+
+/* ------------------------------------------------------------ WORK — 1 --- */
+.work-index { padding: 0 8vw 120px; }
+.work-row { display: grid; grid-template-columns: 60px 220px 1fr 1fr 40px; align-items: center; gap: 40px; width: 100%; padding: 34px 0; border-bottom: 1px solid rgba(29, 32, 29, .1); transition: padding .4s ease; }
+.work-row:hover { padding-left: 16px; }
+.row-number { font-family: 'DM Mono', monospace; font-size: 11px; color: #646b62; }
+.row-image { width: 220px; height: 130px; overflow: hidden; display: block; }
+.row-image .shot img { filter: saturate(.75); transition: transform .6s ease, filter .4s ease; }
+.work-row:hover .row-image .shot img { transform: scale(1.06); filter: saturate(1); }
+.row-title { font-size: clamp(26px, 2.8vw, 40px); font-weight: 400; letter-spacing: -.04em; display: flex; flex-direction: column; gap: 6px; }
+.row-title em { font-size: 11px; font-family: 'DM Mono', monospace; font-style: normal; letter-spacing: .12em; text-transform: uppercase; color: #646b62; }
+.row-description { color: #686f66; font-size: 14px; line-height: 1.6; max-width: 320px; }
+.row-arrow { color: #646b62; transition: transform .3s ease, color .3s ease; }
+.work-row:hover .row-arrow { color: #1d201d; transform: translate(4px, -4px); }
+
+/* --------------------------------------------------------- WORK — 2, 3 --- */
+.collection-head { padding: 120px 8vw 50px; text-align: center; }
+.collection-head h1 { margin: 0 0 20px; font-weight: 400; font-size: clamp(38px, 5vw, 74px); line-height: .96; letter-spacing: -.04em; }
+.collection-head .body-copy { margin: 0 auto; text-align: center; }
+.collection-head .crumbs { justify-content: center; }
+
+.couple-section { padding: 24px 6vw 120px; }
+.category-line { display: flex; justify-content: space-between; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #646b62; padding-bottom: 20px; border-bottom: 1px solid rgba(29, 32, 29, .12); }
+.couple-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding-top: 34px; }
+.couple-card { position: relative; aspect-ratio: 4 / 3; overflow: hidden; color: #fff; }
+.couple-card .shot img { transition: transform .8s cubic-bezier(.2, .7, .2, 1), filter .5s ease; }
+.couple-card:hover .shot img { transform: scale(1.05); filter: brightness(.8); }
+.couple-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(12, 15, 12, .5), rgba(12, 15, 12, .06) 60%); }
+.couple-name { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2; font-family: 'Playfair Display', serif; font-size: clamp(24px, 2.4vw, 38px); letter-spacing: .01em; text-shadow: 0 2px 18px rgba(0, 0, 0, .45); white-space: nowrap; }
+.couple-card small { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 2; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; opacity: .82; white-space: nowrap; }
+
+.play-button { position: absolute; left: 50%; top: 34%; transform: translate(-50%, -50%); z-index: 2; width: 60px; height: 60px; border: 1px solid rgba(255, 255, 255, .7); border-radius: 50%; display: grid; place-items: center; padding-left: 3px; color: #fff; transition: background .3s ease, color .3s ease; }
+.play-button.small { width: 42px; height: 42px; }
+.couple-card:hover .play-button, .band-card:hover .play-button, .story-film-play:hover .play-button { background: #f4f1eb; color: #1d201d; }
+
+/* ------------------------------------------------------------ WORK — 4 --- */
+.story-head { padding: 120px 8vw 20px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.story-head h1 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-size: clamp(34px, 4.4vw, 60px); letter-spacing: -.01em; }
+.story-rule { display: block; width: 58px; height: 1px; background: rgba(29, 32, 29, .35); margin: 22px 0 18px; }
+.story-head .eyebrow { margin: 0; }
+
+.story-film { padding: 34px 8vw 0; }
+.story-film-play { position: relative; display: block; width: 100%; aspect-ratio: 21 / 9; overflow: hidden; border-radius: 2px; color: #fff; box-shadow: 0 34px 66px -30px rgba(29, 32, 29, .55); }
+.story-film-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(12, 15, 12, .6), rgba(12, 15, 12, .12) 60%); }
+.story-film-play .play-button { top: 50%; }
+.story-film-label { position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 2; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; }
+.story-film-play.is-pending { cursor: default; }
+.story-film-play.is-pending .shot img { filter: saturate(.5) brightness(.7); }
+
+/* Depth gallery — staggered rise, real shadow, lift on hover. */
+.story-gallery { padding: 56px 6vw 120px; }
+/* CSS columns: each photograph stacks under the one above, so a row can never
+   leave a hole. Varied ratios keep it scattered rather than a tidy 3x3. */
+.depth-gallery { column-count: 3; column-gap: 24px; }
+.depth-photo { display: block; width: 100%; margin: 0 0 24px; break-inside: avoid; -webkit-column-break-inside: avoid; position: relative; border-radius: 3px; box-shadow: 0 20px 44px -22px rgba(29, 32, 29, .5), 0 5px 14px -8px rgba(29, 32, 29, .3); transition: transform .55s cubic-bezier(.2, .7, .2, 1), box-shadow .55s ease; }
+.depth-photo .shot { border-radius: 3px; }
+.depth-photo .shot img { filter: saturate(.84); transition: filter .45s ease, transform .9s cubic-bezier(.2, .7, .2, 1); }
+.depth-photo:hover { transform: translateY(-9px); box-shadow: 0 38px 70px -24px rgba(29, 32, 29, .58), 0 12px 26px -12px rgba(29, 32, 29, .38); z-index: 2; }
+.depth-photo:hover .shot img { filter: saturate(1); transform: scale(1.05); }
+.depth-photo small { position: absolute; top: 12px; left: 14px; z-index: 3; font-family: 'DM Mono', monospace; font-size: 9px; color: #fff; letter-spacing: .1em; text-shadow: 0 1px 4px rgba(0, 0, 0, .55); opacity: 0; transition: opacity .3s ease; }
+.depth-photo:hover small { opacity: .9; }
+.tone-0 .shot { aspect-ratio: 3 / 4; }
+.tone-1 .shot { aspect-ratio: 1 / 1; }
+.tone-2 .shot { aspect-ratio: 4 / 5; }
+.tone-3 .shot { aspect-ratio: 4 / 3; }
+.tone-4 .shot { aspect-ratio: 2 / 3; }
+
+.back-link { display: inline-flex; align-items: center; gap: 10px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #646b62; transition: color .25s ease; }
+.back-link:hover { color: #1d201d; }
+.back-link.centred { display: flex; justify-content: center; width: 100%; margin-top: 74px; }
+
+/* -------------------------------------------------------------- ABOUT --- */
+.about-page { padding: 0 8vw 140px; display: grid; grid-template-columns: 1fr 1fr; gap: 10%; align-items: center; }
+.about-page h2 { font-size: clamp(36px, 4vw, 58px); line-height: 1; letter-spacing: -.04em; font-weight: 400; margin: 0 0 30px; }
+.about-copy .body-copy + .body-copy { margin-top: 18px; }
+.about-image.is-pending { display: grid; place-items: center; width: 100%; aspect-ratio: 3 / 4; background: #e6e3db; border: 1px dashed rgba(29, 32, 29, .2); }
+.about-image.is-pending span { display: flex; flex-direction: column; gap: 8px; align-items: center; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #646b62; }
+.about-image.is-pending small { font-size: 9px; color: #646b62; letter-spacing: .1em; }
+
+/* ------------------------------------------------------------ CONTACT --- */
+.contact-page { padding: 0 8vw 140px; display: grid; grid-template-columns: 1fr 1.15fr; gap: 8%; align-items: start; }
+.contact-channels { display: flex; flex-direction: column; gap: 13px; }
+.channel { display: flex; align-items: center; gap: 12px; font-size: 14px; color: #5a6159; padding: 13px 16px; border: 1px solid rgba(29, 32, 29, .12); border-radius: 3px; transition: border-color .25s ease, color .25s ease, background .25s ease; }
+.channel span { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.channel small { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #646b62; }
+a.channel:hover { color: #1d201d; border-color: rgba(29, 32, 29, .38); background: rgba(29, 32, 29, .03); }
+.channel.is-pending { opacity: .6; border-style: dashed; }
+.contact-note { margin-top: 12px; }
+
+.enquiry-form { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 24px; padding-top: 26px; }
+/* Was 9px at #8b918a = 2.86:1, the least readable text on the site.
+   11px at #5f665e measures 5.25:1 and stays in the same warm hue family. */
+.enquiry-form label { display: flex; flex-direction: column; gap: 9px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #5f665e; }
+.enquiry-form .full { grid-column: 1 / -1; }
+.enquiry-form input, .enquiry-form select, .enquiry-form textarea { font-family: 'DM Sans', sans-serif; font-size: 15px; color: #1d201d; background: transparent; border: 0; border-bottom: 1px solid rgba(29, 32, 29, .2); border-radius: 0; padding: 9px 0; outline: none; transition: border-color .25s ease; }
+.enquiry-form textarea { resize: vertical; line-height: 1.6; }
+.enquiry-form input:focus, .enquiry-form select:focus, .enquiry-form textarea:focus { border-bottom-color: #1d201d; }
+.enquiry-form select { appearance: none; -webkit-appearance: none; cursor: pointer; background-image: linear-gradient(45deg, transparent 50%, #5f665e 50%), linear-gradient(135deg, #5f665e 50%, transparent 50%); background-position: calc(100% - 9px) 18px, calc(100% - 4px) 18px; background-size: 5px 5px; background-repeat: no-repeat; }
+.enquiry-submit { grid-column: 1 / -1; justify-self: start; display: inline-flex; align-items: center; gap: 13px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #f4f1eb; background: #1d201d; padding: 15px 27px; border-radius: 2px; transition: opacity .25s ease; }
+.enquiry-submit:hover { opacity: .84; }
+.enquiry-sent { grid-column: 1 / -1; margin: 0; font-size: 13px; line-height: 1.6; color: #5a6159; }
+
+/* ------------------------------------------------------------- FOOTER --- */
+footer { background: #26211a; color: #e8e2d4; padding: 55px 4.5vw 25px; display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 20px; align-items: start; }
+.footer-brand { align-self: start; color: #e4e2d8; }
+.footer-links, .footer-contact { display: flex; flex-direction: column; gap: 12px; font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .09em; min-width: 0; }
+/* The email has no break opportunity — without this it widens the whole page. */
+.footer-contact { color: #b3a891; overflow-wrap: anywhere; }
+.footer-bottom { grid-column: 1 / -1; border-top: 1px solid #423a2e; margin-top: 55px; padding-top: 18px; display: flex; justify-content: space-between; font-family: 'DM Mono', monospace; font-size: 9px; color: #8d8271; text-transform: uppercase; letter-spacing: .08em; }
+
+/* ----------------------------------------------------------- LIGHTBOX --- */
+.lightbox { position: fixed; z-index: 100; inset: 0; display: grid; place-items: center; background: rgba(10, 12, 10, .96); animation: fade-in .25s ease both; }
+.lightbox .shot { width: auto; height: auto; }
+.lightbox .shot img { width: auto; height: auto; max-width: min(82vw, 1100px); max-height: 84vh; object-fit: contain; box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .7); }
+.lightbox .shot-mark { right: 18px; bottom: 16px; font-size: 9px; }
+.lightbox-close, .lightbox-nav { position: absolute; border: 0; color: #f4f1eb; cursor: pointer; transition: opacity .25s ease; }
+.lightbox-close { top: 28px; right: 35px; }
+.lightbox-nav { top: 50%; transform: translateY(-50%); padding: 20px; }
+.lightbox-nav:hover { opacity: .6; }
+.lightbox-nav.prev { left: 3vw; }
+.lightbox-nav.next { right: 3vw; }
+.lightbox-counter { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); font-family: 'DM Mono', monospace; letter-spacing: .12em; font-size: 10px; color: #a9aca3; }
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* --------------------------------------------------------- RESPONSIVE --- */
+@media (max-width: 1100px) {
+  .band-grid[data-count='3'] { grid-template-columns: repeat(2, 1fr); }
+  .band-grid[data-count='3'] .band-card:first-child { grid-column: span 2; aspect-ratio: 21 / 9; }
+}
+
+@media (max-width: 900px) {
+  .page-intro { grid-template-columns: 1fr; gap: 30px; }
+  .page-intro > div { grid-column: 1; }
+  /* Grid children default to min-width:auto and refuse to shrink below their
+     longest word — that pushed the 1fr column past the viewport. */
+  .work-row { grid-template-columns: 32px 120px minmax(0, 1fr); gap: 16px; }
+  .work-row > * { min-width: 0; }
+  .row-image { width: 120px; height: 82px; }
+  .row-title { font-size: clamp(20px, 5.4vw, 30px); overflow-wrap: anywhere; }
+  .row-title em { font-size: 10px; letter-spacing: .1em; }
+  .row-description, .row-arrow { display: none; }
+  .about-page { grid-template-columns: 1fr; gap: 50px; }
+  .contact-page { grid-template-columns: 1fr; gap: 54px; }
+  .depth-gallery { column-count: 3; column-gap: 14px; }
+  .depth-photo { margin-bottom: 14px; }
+  .story-gallery { padding-left: 5vw; padding-right: 5vw; }
+  .hero-stage { height: 400px; --gap: 236px; }
+  .hero-frame { width: 244px; height: 344px; }
+}
+
+@media (max-width: 640px) {
+
+  .hero { min-height: auto; padding: 44px 0 50px; }
+  .hero-wordmark { margin-bottom: -28px; }
+  .hero-nav { width: 86vw; margin-top: 0; }
+  .hero-stage { height: 336px; --gap: 176px; }
+  .hero-frame { width: 196px; height: 280px; }
+  .hero-title { margin-top: 24px; padding: 0 6vw; }
+  .hero-title p { letter-spacing: .14em; line-height: 1.9; }
+
+  .band { padding: 48px 6vw; }
+  .band-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .band-head h2 { white-space: normal; }
+  .band-rule { display: none; }
+  /* Collections sit side by side and swipe, for EVERY category — never stacked. */
+  .band-grid, .band-grid[data-count='1'], .band-grid[data-count='3'] { display: flex; grid-template-columns: none; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; -ms-overflow-style: none; margin: 0 -6vw; padding: 0 6vw 4px; }
+  .band-grid::-webkit-scrollbar { display: none; }
+  .band-grid > .band-card, .band-grid[data-count='1'] .band-card, .band-grid[data-count='3'] .band-card:first-child { flex: 0 0 76%; grid-column: auto; aspect-ratio: 4 / 3; scroll-snap-align: center; }
+
+  .couple-grid { grid-template-columns: 1fr; gap: 4px; }
+  .collection-head, .story-head { padding-left: 6vw; padding-right: 6vw; padding-top: 90px; }
+  .story-gallery { padding: 40px 5vw 90px; }
+  /* Phones keep a real contact-sheet grid — never one photograph at a time. */
+  .depth-gallery { column-count: 3; column-gap: 7px; }
+  .depth-photo { margin-bottom: 7px; border-radius: 2px; box-shadow: 0 8px 18px -10px rgba(29, 32, 29, .5); }
+  .depth-photo .shot { border-radius: 2px; }
+  /* The full wordmark cannot fit a ~110px tile, so it shows its initials. */
+  .depth-photo .shot-mark { font-size: 0; right: 4px; bottom: 3px; letter-spacing: 0; }
+  .depth-photo .shot-mark::after { content: attr(data-short); font-size: 6px; letter-spacing: .08em; }
+
+  .enquiry-form { grid-template-columns: 1fr; gap: 20px; }
+  .home-note { padding: 44px 6vw 70px; }
+  .home-note-cta { margin-left: 0; }
+  .shot-mark { font-size: 7px; right: 8px; bottom: 7px; }
+  footer { grid-template-columns: 1fr 1fr; }
+  .footer-brand { grid-column: 1 / -1; }
+  .footer-bottom { margin-top: 35px; flex-direction: column; gap: 10px; }
+  .lightbox .shot img { max-width: 88vw; max-height: 76vh; }
+  .lightbox-nav { padding: 10px; }
+  .lightbox-nav.prev { left: 1vw; }
+  .lightbox-nav.next { right: 1vw; }
+}
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+
+
+/* ============================================================
+   MOTION — scroll reveal, page enter, focus.
+   Transform + opacity only. One observer. Off under reduced motion.
+   ============================================================ */
+
+.reveal { opacity: 0; transform: translate3d(0, 16px, 0); transition: opacity .55s cubic-bezier(.2,.7,.2,1), transform .55s cubic-bezier(.2,.7,.2,1); transition-delay: calc(var(--i, 0) * 45ms); will-change: opacity, transform; }
+.reveal.is-in { opacity: 1; transform: translate3d(0, 0, 0); will-change: auto; }
+
+/* Each navigation replays a short settle on the whole page body. */
+.page-shell { animation: page-enter .5s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes page-enter { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }
+
+/* The hero introduces itself once, top-down. */
+.hero-wordmark { animation: hero-in .9s cubic-bezier(.2,.7,.2,1) both; }
+.hero-stage    { animation: hero-in 1s cubic-bezier(.2,.7,.2,1) .1s both; }
+.hero-nav      { animation: hero-in .9s cubic-bezier(.2,.7,.2,1) .22s both; }
+.hero-title    { animation: hero-in .9s cubic-bezier(.2,.7,.2,1) .26s both; }
+.hero-scroll   { animation: hero-in .9s cubic-bezier(.2,.7,.2,1) .38s both; }
+@keyframes hero-in { from { opacity: 0; transform: translate3d(0, 18px, 0); } to { opacity: 1; transform: none; } }
+
+/* Keyboard users could not see where they were — every control now says so. */
+:where(button, a, [tabindex]):focus-visible { outline: 2px solid #8a6d3a; outline-offset: 3px; border-radius: 2px; }
+.band-card:focus-visible, .couple-card:focus-visible, .depth-photo:focus-visible { outline-offset: 4px; }
+.lightbox-close:focus-visible, .lightbox-nav:focus-visible, .hero-scroll:focus-visible { outline-color: #f4f1eb; }
+
+/* Nav underline that grows from the left rather than just dimming. */
+.nav-links button { position: relative; padding-bottom: 3px; }
+.nav-links button::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .35s cubic-bezier(.2,.7,.2,1); }
+.nav-links button:hover::after { transform: scaleX(1); }
+
+/* The band rule draws itself in as the heading arrives. */
+.band-head .band-rule { transform: scaleX(0); transform-origin: left; transition: transform .8s cubic-bezier(.2,.7,.2,1) .15s; }
+.band-head.is-in .band-rule { transform: scaleX(1); }
+
+.enquiry-submit { transition: opacity .25s ease, transform .25s cubic-bezier(.2,.7,.2,1); }
+.enquiry-submit:hover { transform: translateY(-2px); }
+.home-note-cta svg, .nav-cta svg { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
+.home-note-cta:hover svg, .nav-cta:hover svg { transform: translate(3px, -3px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .page-shell, .hero-wordmark, .hero-stage, .hero-nav, .hero-title, .hero-scroll { animation: none; }
+  .band-head .band-rule { transform: scaleX(1); transition: none; }
+}
+
+
+/* ============================================================
+   PREMIUM LAYER
+   Photograph fade-in, reading progress, film grain, lightbox.
+   ============================================================ */
+
+/* Nothing pops in: each frame settles onto a warm plate as it decodes. */
+.shot { background: #e6e1d6; }
+.shot img { opacity: 0; transform: scale(1.012); transition: opacity .75s cubic-bezier(.22, 1, .36, 1), transform .95s cubic-bezier(.22, 1, .36, 1); }
+.shot.is-loaded img { opacity: 1; transform: none; }
+
+/* Reading progress — a hairline of gold, driven by one rAF-throttled listener. */
+.read-bar { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 60; pointer-events: none; background: linear-gradient(90deg, #c5a76d, #8a6d3a); transform: scaleX(var(--read, 0)); transform-origin: left; opacity: 0; transition: opacity .4s ease; }
+:root.is-scrolled .read-bar { opacity: 1; }
+.nav-shell { transition: box-shadow .4s ease, background .4s ease; }
+:root.is-scrolled .nav-shell { box-shadow: 0 1px 26px -8px rgba(29, 32, 29, .22); }
+
+/* Analog grain. Fixed, tiny, and under everything interactive — the design
+   system's "warm analog" note, at an opacity you feel rather than see. */
+body::after { content: ''; position: fixed; inset: 0; z-index: 45; pointer-events: none; opacity: .04; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+/* Lightbox: depth behind, and each photograph arrives rather than blinking. */
+.lightbox { backdrop-filter: blur(22px) saturate(.9); -webkit-backdrop-filter: blur(22px) saturate(.9); background: rgba(10, 12, 10, .93); touch-action: pan-y; }
+.lightbox .shot { animation: lb-in .5s cubic-bezier(.22, 1, .36, 1) both; background: none; }
+@keyframes lb-in { from { opacity: 0; transform: scale(.965); } to { opacity: 1; transform: none; } }
+.lightbox-close, .lightbox-nav { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; transition: background .3s ease, opacity .3s ease; }
+.lightbox-close:hover, .lightbox-nav:hover { background: rgba(244, 241, 235, .12); opacity: 1; }
+
+/* Pending states read as deliberate rather than broken. */
+.channel.is-pending, .about-image.is-pending { background-image: repeating-linear-gradient(135deg, rgba(197, 167, 109, .05) 0 8px, transparent 8px 16px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .shot img { opacity: 1; transform: none; transition: none; }
+  .lightbox .shot { animation: none; }
+  .read-bar { transition: none; }
+}
+
+
+/* ============================================================
+   MOTION PASS — one vocabulary, applied across every surface.
+   Transform/opacity only. Everything below folds away under
+   prefers-reduced-motion at the end of this file.
+   ============================================================ */
+
+/* Headings wipe up from behind their own baseline. */
+.page-intro h1, .collection-head h1, .story-head h1, .band-head h2, .about-page h2 { clip-path: inset(-20% -20% -20% -20%); }
+.reveal h1, .reveal h2 { opacity: 0; transform: translate3d(0, 22px, 0); transition: opacity .7s var(--ease-out) .06s, transform .7s var(--ease-out) .06s; }
+.reveal.is-in h1, .reveal.is-in h2 { opacity: 1; transform: none; }
+.reveal .body-copy, .reveal .eyebrow, .reveal .crumbs, .reveal .story-rule { opacity: 0; transform: translate3d(0, 14px, 0); transition: opacity .6s var(--ease-out) .2s, transform .6s var(--ease-out) .2s; }
+.reveal.is-in .body-copy, .reveal.is-in .eyebrow, .reveal.is-in .crumbs, .reveal.is-in .story-rule { opacity: 1; transform: none; }
+
+/* Cards rise slightly and their photograph drifts in behind them. */
+.band-card, .couple-card { transition: transform var(--t-slow) var(--ease-out), box-shadow var(--t-slow) var(--ease-out); }
+.band-card:hover, .couple-card:hover { transform: translateY(-6px); box-shadow: 0 34px 60px -30px rgba(29, 32, 29, .55); }
+.band-card:active, .couple-card:active, .depth-photo:active { transform: translateY(-2px) scale(.995); }
+.band-card-label, .couple-name { transition: transform var(--t-slow) var(--ease-out), letter-spacing var(--t-slow) var(--ease-out); }
+.band-card:hover .band-card-label { letter-spacing: .09em; }
+.couple-card:hover .couple-name { letter-spacing: .04em; }
+
+/* Work rows: the index number and arrow lead the movement. */
+.work-row .row-number { transition: transform var(--t-mid) var(--ease-out), color var(--t-mid) ease; }
+.work-row:hover .row-number { transform: translateX(4px); color: #8a6d3a; }
+.work-row .row-title { transition: transform var(--t-mid) var(--ease-out); }
+.work-row:hover .row-title { transform: translateX(6px); }
+
+/* Breadcrumbs, footer and channel rows all answer the pointer the same way. */
+.crumbs button, .footer-links button, .footer-contact a, .back-link { transition: color var(--t-fast) ease, transform var(--t-fast) var(--ease-out); }
+.crumbs button:hover, .footer-links button:hover, .back-link:hover { transform: translateX(2px); }
+.channel { transition: border-color var(--t-mid) ease, background var(--t-mid) ease, transform var(--t-mid) var(--ease-out); }
+a.channel:hover { transform: translateX(3px); }
+
+/* Form fields: the rule under the field grows from the left on focus. */
+.enquiry-form label { position: relative; }
+.enquiry-form input, .enquiry-form select, .enquiry-form textarea { transition: border-color var(--t-mid) ease, background var(--t-mid) ease; }
+.enquiry-form input:focus, .enquiry-form select:focus, .enquiry-form textarea:focus { background: rgba(197, 167, 109, .06); }
+.enquiry-submit:active { transform: translateY(0) scale(.985); }
+
+/* Film play buttons breathe, so a still frame still reads as playable. */
+.play-button { transition: background var(--t-mid) ease, color var(--t-mid) ease, transform var(--t-mid) var(--ease-out); }
+.couple-card:hover .play-button, .band-card:hover .play-button, .story-film-play:hover .play-button { transform: translate(-50%, -50%) scale(1.08); }
+
+/* The scroll cue nudges downwards, forever, quietly. */
+.hero-scroll svg { animation: cue 2.4s var(--ease-in-out) infinite; }
+@keyframes cue { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+
+/* Mobile menu opens as a panel rather than a jump. */
+.nav-links button { transition: opacity var(--t-fast) ease, transform var(--t-fast) var(--ease-out); }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal h1, .reveal h2, .reveal .body-copy, .reveal .eyebrow, .reveal .crumbs, .reveal .story-rule { opacity: 1; transform: none; transition: none; }
+  .band-card:hover, .couple-card:hover, .work-row:hover .row-title, .work-row:hover .row-number,
+  .crumbs button:hover, .footer-links button:hover, .back-link:hover, a.channel:hover { transform: none; }
+  .hero-scroll svg { animation: none; }
+  .play-button, .band-card-label, .couple-name { transition: none; }
+}
+
+
+/* ---- NAV RESPONSIVE ---------------------------------------------------- */
+/* Collapses at 860px: at 12px the four links plus brand and CTA stop fitting
+   comfortably well before phone width. */
+@media (max-width: 860px) {
+  .menu-button { display: grid; }
+  .nav-cta { display: none; }
+  .nav-links {
+    position: absolute; top: 100%; left: 0; right: 0;
+    flex-direction: column; align-items: stretch; gap: 0; margin: 0;
+    background: #f4f1eb;
+    border-bottom: 1px solid rgba(29, 32, 29, .08);
+    padding: 0 clamp(16px, 6vw, 40px);
+    max-height: 0; overflow: hidden;
+    transition: max-height .42s var(--ease-out), padding .42s var(--ease-out), box-shadow .42s ease;
+  }
+  .nav-links.is-open { max-height: 380px; padding: 6px clamp(16px, 6vw, 40px) 20px; box-shadow: 0 22px 38px -24px rgba(29, 32, 29, .4); }
+  .nav-links button { font-size: 14px; letter-spacing: .13em; padding: 17px 0; border-bottom: 1px solid rgba(29, 32, 29, .08); }
+  .nav-links button:last-child { border-bottom: 0; }
+  .nav-links button::after { display: none; }
+}
+
+@media (max-width: 380px) {
+  .brand { font-size: 12px; letter-spacing: .14em; gap: 10px; }
+  .brand small { font-size: 7px; letter-spacing: .2em; }
+  .brand-mark { width: 34px; height: 34px; }
+  .nav-shell { padding-left: 14px; padding-right: 14px; }
+}
+
+@media (max-width: 860px) and (max-height: 460px) {
+  .nav-links.is-open { max-height: 62vh; overflow-y: auto; }
+}
+
+.footer-social { display: inline-flex; align-items: center; gap: 8px; color: #c3b186; transition: color .25s ease, transform .25s var(--ease-out); }
+.footer-social:hover { color: #e2d3a8; transform: translateX(2px); }
+
+/* Not-found state */
+.notfound-actions { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; padding: 0 8vw 140px; }
+.enquiry-sent a { text-decoration: underline; text-underline-offset: 3px; }
+.crumbs em { font-style: normal; opacity: .45; }
+
+
+/* ============================================================
+   TASTE PASS
+   Applying the redesign + high-end-visual-design skills:
+   container discipline, optical rhythm, orphan control,
+   wayfinding, and a warmer footer that stays in-palette.
+   ============================================================ */
+
+/* Content had no ceiling — on a 27" display the type ran the full width and the
+   measure fell apart. Sections keep their vw padding but stop growing. */
+.page-intro, .work-index, .couple-section, .story-gallery, .about-page,
+.contact-page, .band, .home-note, .collection-head, .story-head, .notfound-actions,
+.story-film, footer {
+  max-width: 1560px;
+  margin-inline: auto;
+}
+
+/* Large display type breaks badly at arbitrary widths; balance stops the
+   one-word last line. `pretty` does the same for paragraphs where supported. */
+h1, h2, .band-head h2, .row-title { text-wrap: balance; }
+.body-copy, .enquiry-sent, .home-note p { text-wrap: pretty; }
+
+/* Numbers sat in proportional figures and shifted as they changed. */
+.crumbs, .category-line, .row-number, .lightbox-counter, .couple-card small,
+.hero-wordmark span { font-variant-numeric: tabular-nums; }
+
+/* Optical rhythm: identical top and bottom padding reads as top-heavy, because
+   the heading above already carries its own space. */
+.band { padding-block: 74px 88px; }
+.couple-section { padding-block: 24px 132px; }
+
+/* Radius scale — containers softer than the things nested inside them. */
+.band-card, .couple-card { border-radius: 4px; }
+.depth-photo, .depth-photo .shot { border-radius: 3px; }
+.hero-frame { border-radius: 3px; }
+
+/* Wayfinding: the nav never said which section you were in. */
+.nav-links button.is-current { opacity: 1; color: #1d201d; }
+.nav-links button.is-current::after { transform: scaleX(1); background: #8a6d3a; }
+
+/* Keyboard users had no way past the navigation. */
+.skip-link { position: absolute; left: 50%; top: 0; transform: translate(-50%, -140%); z-index: 80; background: #1d201d; color: #f4f1eb; font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 12px 20px; border-radius: 0 0 3px 3px; transition: transform .28s var(--ease-out); }
+.skip-link:focus-visible { transform: translate(-50%, 0); outline: 2px solid #c5a76d; outline-offset: 2px; }
+
+/* Trailing arrows sit in their own disc rather than floating beside the label. */
+.cta-disc { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: rgba(29, 32, 29, .09); transition: background var(--t-mid) ease, transform var(--t-mid) var(--ease-out); }
+.nav-cta { border-bottom: 0; padding-bottom: 0; gap: 10px; }
+.nav-cta:hover .cta-disc { background: rgba(29, 32, 29, .16); transform: translate(2px, -2px); }
+.enquiry-submit .cta-disc { background: rgba(244, 241, 235, .18); }
+.enquiry-submit:hover .cta-disc { background: rgba(244, 241, 235, .3); transform: translate(2px, -2px); }
+
+/* Shadows tinted to the ground they fall on, never neutral black. */
+.band-card, .couple-card, .depth-photo { box-shadow: 0 18px 40px -24px rgba(58, 46, 30, .5); }
+.band-card:hover, .couple-card:hover { box-shadow: 0 34px 62px -28px rgba(58, 46, 30, .6); }
+
+/* An asymmetric first cell breaks the three-equal-columns look on wide screens. */
+@media (min-width: 1101px) {
+  .band-grid[data-count='3'] { grid-template-columns: 1.34fr 1fr 1fr; }
+  .band-grid[data-count='3'] .band-card:first-child { aspect-ratio: 5 / 4; }
+}
+
+@media (max-width: 640px) {
+  .band { padding-block: 48px 58px; }
+  .couple-section { padding-block: 20px 84px; }
+}
+
+
+/* A category with a single collection: the card keeps a sane 4:3 and shares the
+   row with a short editorial column, instead of stretching to a 21:9 banner
+   that filled the screen. */
+.band-grid[data-count='1'] { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: stretch; gap: 34px; }
+.band-grid[data-count='1'] .band-card { aspect-ratio: 4 / 3; }
+
+.band-aside { display: flex; flex-direction: column; justify-content: flex-end; gap: 18px; padding: 0 0 6px 4px; }
+.band-aside .body-copy { max-width: 34ch; font-size: 16px; }
+.band-aside-count { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #646b62; font-variant-numeric: tabular-nums; }
+.band-aside-cta { display: inline-flex; align-items: center; gap: 11px; align-self: flex-start; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; padding-bottom: 7px; border-bottom: 1px solid rgba(29, 32, 29, .5); transition: opacity .25s ease, gap .3s var(--ease-out); }
+.band-aside-cta:hover { opacity: .62; gap: 15px; }
+
+@media (max-width: 900px) {
+  .band-grid[data-count='1'] { grid-template-columns: 1fr; gap: 24px; }
+  .band-aside { padding-left: 0; }
+}
+
+@media (max-width: 640px) {
+  /*
+   * A swipe carousel needs something to swipe between. With one collection
+   * there is nothing to swipe to, and pinning the text into a 76%-wide track
+   * cramped and clipped it. So this band opts out of the scroller entirely:
+   * the photograph sits full width and the words sit underneath it, where
+   * they have the whole column to breathe.
+   */
+  .band-grid[data-count='1'] {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    overflow: visible;
+    scroll-snap-type: none;
+    margin: 0;
+    padding: 0;
+  }
+  .band-grid[data-count='1'] .band-card {
+    flex: none;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    scroll-snap-align: none;
+  }
+  .band-grid[data-count='1'] .band-aside {
+    flex: none;
+    justify-content: flex-start;
+    gap: 14px;
+    padding: 0;
+  }
+  .band-aside .body-copy { max-width: none; font-size: 15px; }
+  .band-aside-cta { font-size: 12px; padding-bottom: 8px; }
+}
