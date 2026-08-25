@@ -1,9 +1,8 @@
 import {
   useCallback, useEffect, useLayoutEffect, useRef, useState,
-  type CSSProperties, type FormEvent, type ReactNode,
+  type CSSProperties, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode,
 } from 'react';
-import { ArrowLeft, ArrowRight, ArrowUpRight, Instagram, Mail, Menu, MessageCircle, Phone, Play, X } from 'lucide-react';
-import AlbumHero from '@/components/AlbumHero';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Instagram, Mail, Menu, MessageCircle, Phone, Play, X } from 'lucide-react';
 import {
   filmCategories,
   findCategory,
@@ -330,6 +329,187 @@ function PageIntro({ label, title, description }: { label: string; title: ReactN
 
 /* ---------------------------------------------------------------- HOME --- */
 
+/*
+ * Brief: visitors see a slideshow first.
+ *
+ * A stepped slideshow, not a free-scrolling strip. The centred photograph is
+ * the large one; its neighbours sit back on either side. One swipe, one
+ * sideways wheel nudge or one arrow key advances exactly ONE frame — a
+ * cooldown makes sure a single flick cannot skid through three of them.
+ *
+ * It wraps forever: the offset of each frame is its SHORTEST signed distance
+ * from the current index, so after the last photograph the first comes round
+ * again with no seam and no end.
+ *
+ * Vertical scrolling is deliberately left alone — hijacking it would trap the
+ * visitor in the hero. Horizontal intent only.
+ */
+const HERO_DWELL_MS = 5200;  /* unattended, it advances on its own */
+const HERO_LOCK_MS = 380;    /* one gesture, one frame — under the 620ms glide so rapid swipes stay responsive */
+const HERO_SWIPE_PX = 45;    /* drag distance that counts as a step */
+const HERO_WHEEL_PX = 40;    /* horizontal wheel travel that counts as a step */
+
+function HeroSlideshow() {
+  const images = portfolioConfig.slideshowImages;
+  const count = images.length;
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0);
+
+  const locked = useRef(false);
+  const paused = useRef(false);
+  const pointer = useRef({ id: -1, startX: 0, active: false });
+  const wheelAcc = useRef(0);
+
+  /*
+   * The lean is written straight to the DOM as a custom property. Putting it in
+   * React state instead re-rendered all eight frames on every pointermove — that
+   * was what made the swipe feel like it was catching.
+   */
+  const lean = useCallback((px: number) => {
+    stageRef.current?.style.setProperty('--drag', `${px}px`);
+  }, []);
+
+  const step = useCallback((direction: number) => {
+    if (locked.current) return;
+    locked.current = true;
+    setIndex((current) => current + direction);
+    window.setTimeout(() => { locked.current = false; }, HERO_LOCK_MS);
+  }, []);
+
+  /* Unattended autoplay. Stops the moment anyone touches or looks at it. */
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = window.setInterval(() => {
+      if (!paused.current && !pointer.current.active) setIndex((current) => current + 1);
+    }, HERO_DWELL_MS);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  /* Horizontal wheel / trackpad. Registered by hand so it can be non-passive. */
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const onWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;  /* let the page scroll */
+      event.preventDefault();
+      wheelAcc.current += event.deltaX;
+      if (Math.abs(wheelAcc.current) < HERO_WHEEL_PX) return;
+      step(wheelAcc.current > 0 ? 1 : -1);
+      wheelAcc.current = 0;
+    };
+    stage.addEventListener('wheel', onWheel, { passive: false });
+    return () => stage.removeEventListener('wheel', onWheel);
+  }, [step]);
+
+  const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    pointer.current = { id: event.pointerId, startX: event.clientX, active: true };
+    stage.setPointerCapture(event.pointerId);
+    /* Transitions stand down while the deck is under the finger, so it tracks
+       1:1 instead of easing towards where the finger already was. */
+    stage.classList.add('is-dragging');
+  };
+
+  const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!pointer.current.active) return;
+    const travelled = event.clientX - pointer.current.startX;
+    /* Damped, and softened further past the commit point so it reads as resistance. */
+    const eased = Math.sign(travelled) * Math.pow(Math.abs(travelled), 0.86) * 0.62;
+    lean(eased);
+  };
+
+  const endDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const stage = stageRef.current;
+    if (!stage || !pointer.current.active) return;
+    const travelled = event.clientX - pointer.current.startX;
+    pointer.current.active = false;
+    if (stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
+    /* Class off and lean to zero in the same frame: the release and the step
+       become one continuous movement rather than two. */
+    stage.classList.remove('is-dragging');
+    lean(0);
+    if (Math.abs(travelled) > HERO_SWIPE_PX) step(travelled < 0 ? 1 : -1);
+  };
+
+  /* Shortest signed distance from the centre — this is what makes it endless. */
+  const offsetOf = (position: number) => {
+    const forward = ((position - index) % count + count) % count;
+    return forward > count / 2 ? forward - count : forward;
+  };
+
+  const centred = ((index % count) + count) % count;
+
+  return (
+    <section className="hero" id="hero">
+      <div className="hero-wordmark">
+        <span>EST</span>
+        <h1>{portfolioConfig.shortName}<em>Photography</em></h1>
+        <span>{portfolioConfig.established}</span>
+      </div>
+
+      <div
+        className="hero-stage"
+        ref={stageRef}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onMouseEnter={() => { paused.current = true; }}
+        onMouseLeave={() => { paused.current = false; }}
+        onFocus={() => { paused.current = true; }}
+        onBlur={() => { paused.current = false; }}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowRight') { event.preventDefault(); step(1); }
+          if (event.key === 'ArrowLeft') { event.preventDefault(); step(-1); }
+        }}
+        tabIndex={0}
+        role="group"
+        aria-roledescription="carousel"
+        aria-label="Photographs from the portfolio — use the arrow keys"
+      >
+        {images.map((image, position) => {
+          const offset = offsetOf(position);
+          const depth = Math.abs(offset);
+          /* The centre frame is the large one; each rank back sits smaller and dimmer. */
+          const scale = depth === 0 ? 1 : depth === 1 ? 0.74 : 0.56;
+          const fade = depth === 0 ? 1 : depth === 1 ? 0.72 : 0.34;
+          return (
+            <div
+              key={image.src + position}
+              className={`hero-frame ${offset === 0 ? 'is-active' : ''} ${depth > 2 ? 'is-far' : ''}`}
+              style={{ '--o': offset, '--s': scale, '--f': fade, '--z': 10 - depth } as CSSProperties}
+              aria-hidden={offset === 0 ? undefined : true}
+            >
+              <Shot image={image} eager={depth <= 1} />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Bare arrows, no counter — the reference site's treatment. Swipe, wheel
+          and arrow keys all still drive the same step(). */}
+      <div className="hero-nav">
+        <button onClick={() => step(-1)} aria-label="Previous photograph"><ArrowLeft size={20} /></button>
+        <button onClick={() => step(1)} aria-label="Next photograph"><ArrowRight size={20} /></button>
+      </div>
+
+      <p className="hero-sr" aria-live="polite">
+        Photograph {centred + 1} of {count}
+      </p>
+
+      <div className="hero-title">
+        <h2>The <span>PORTFOLIO</span></h2>
+        <p>{portfolioConfig.heroTagline}</p>
+      </div>
+
+      <button className="hero-scroll" onClick={() => document.getElementById('collections')?.scrollIntoView({ behavior: 'smooth' })}>
+        Scroll to explore <ArrowDown size={15} />
+      </button>
+    </section>
+  );
+}
+
 /** One category band on the home page: heading, rule, then its collection cards. */
 function CategoryBand({ category, navigate }: { category: WorkCategory; navigate: Nav }) {
   return (
@@ -383,7 +563,7 @@ function CategoryBand({ category, navigate }: { category: WorkCategory; navigate
 function Home({ navigate }: { navigate: Nav }) {
   return (
     <>
-      <AlbumHero />
+      <HeroSlideshow />
       <div className="collections" id="collections">
         {portfolioConfig.categories.map((category) => (
           <CategoryBand key={category.id} category={category} navigate={navigate} />
