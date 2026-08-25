@@ -822,7 +822,8 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 }
 .strip-card:focus-visible { box-shadow: 0 26px 50px rgba(57, 38, 19, .42), 0 0 0 4px rgba(197, 167, 109, .6); }
 
-.strip-portrait { position: absolute; inset: 7px 7px 25%; overflow: hidden; background: #766a58; }
+/* The caption bar is gone, so the portrait takes the whole plate. */
+.strip-portrait { position: absolute; inset: 7px; overflow: hidden; background: #766a58; }
 .strip-portrait img {
   display: block; width: 100%; height: 100%; object-fit: cover;
   -webkit-user-drag: none; pointer-events: none;
@@ -833,17 +834,6 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 .strip-mark { position: absolute; right: 6px; bottom: 5px; z-index: 2; font-family: 'DM Mono', monospace; font-size: 6px; letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 255, 255, .62); text-shadow: 0 1px 3px rgba(0, 0, 0, .6); pointer-events: none; white-space: nowrap; }
 
 /* Caption bar — the authored anatomy, carrying couple and place. */
-.strip-footer {
-  position: absolute; right: 7px; bottom: 7px; left: 7px; height: calc(25% - 7px);
-  display: grid; grid-template-columns: clamp(26px, 3.2vw, 43px) 1fr; align-items: center;
-  gap: clamp(6px, .7vw, 11px); padding: clamp(7px, .8vw, 12px);
-  color: #f0dfc2; background: #171612; text-align: left;
-}
-.strip-index { display: grid; width: clamp(23px, 2.7vw, 37px); aspect-ratio: 1; place-items: center; border: 1px solid #c5a76d; border-radius: 50%; color: #c5a76d; font: 500 clamp(7px, .68vw, 11px)/1 'DM Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
-.strip-meta { min-width: 0; }
-.strip-name, .strip-place { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.strip-name { color: #f3e6cc; font-family: 'Playfair Display', serif; font-size: clamp(10px, 1.02vw, 15px); line-height: 1.15; }
-.strip-place { margin-top: clamp(3px, .35vw, 5px); color: #c5a76d; font-family: 'DM Mono', monospace; font-size: clamp(5px, .48vw, 8px); letter-spacing: .15em; text-transform: uppercase; line-height: 1; }
 
 .strip-nav { position: relative; z-index: 6; display: flex; justify-content: space-between; align-items: center; width: min(760px, 84vw); margin-top: 14px; color: #fdfaf3; animation: hero-in .9s var(--ease-out) .22s both; }
 .strip-nav button { width: 48px; height: 48px; display: grid; place-items: center; opacity: .72; transition: opacity .3s ease, transform .35s var(--ease-out); }

@@ -19,15 +19,16 @@ import { portfolioConfig } from '@/data/portfolio';
  *
  * Kept from the source, because they are the look:
  *   the transform maths and easing, the pointer parallax, the idle drift after
- *   3.6s, the paper-rule stage, the grain, the pointer-following light, the
- *   edge vignette, and the card anatomy of portrait over a dark caption bar.
+ *   3.6s, the paper-rule stage, the grain, the pointer-following light and the
+ *   edge vignette.
  *
  * Changed on purpose:
- *   its orange accent becomes the gold from the client's logo; Arial Narrow
- *   becomes the site's Playfair and DM Mono; and the person name/role footer
- *   becomes couple name and place, which is what this studio's cards carry.
- *   The behaviour around it — arrows, drag, autoplay, wrap, watermark — is the
- *   site's own and is unchanged.
+ *   its orange accent becomes the gold from the client's logo, and Arial Narrow
+ *   becomes the site's Playfair and DM Mono. The authored card carries a dark
+ *   caption bar under the portrait; here the photograph takes the whole plate
+ *   instead, so nothing competes with it. The names still reach assistive tech
+ *   through each card's label. The behaviour around it — arrows, drag,
+ *   autoplay, wrap, watermark — is the site's own and is unchanged.
  */
 
 /* Every constant below is the authored value. */
@@ -40,8 +41,8 @@ const COMPACT_AT = 650;
 
 type Card = { src: string; alt: string; name: string; place: string };
 
-/* Cards want a caption, so they are built from real stories rather than from
-   the bare image list — one from each of the first categories. */
+/* Built from real stories rather than the bare image list, so each card can
+   name itself to a screen reader — one from each of the first categories. */
 function buildCards(): Card[] {
   const out: Card[] = [];
   for (const category of portfolioConfig.categories) {
@@ -261,20 +262,14 @@ export default function FilmstripHero() {
               onClick={() => moveTo(i)}
               onFocus={() => moveTo(i)}
               aria-current={i === active ? 'true' : 'false'}
-              aria-label={`${card.name}, ${card.place}`}
+              /* Name and place still reach assistive tech, just not the eye. */
+              aria-label={`${card.name} — ${card.place}`}
             >
               <span className="strip-portrait">
                 <img src={card.src} alt={card.alt} draggable={false} loading={i < 4 ? 'eager' : 'lazy'} />
                 {portfolioConfig.watermark.enabled && (
                   <span className="strip-mark" aria-hidden="true">{portfolioConfig.watermark.text}</span>
                 )}
-              </span>
-              <span className="strip-footer">
-                <span className="strip-index">{String(i + 1).padStart(2, '0')}</span>
-                <span className="strip-meta">
-                  <span className="strip-name">{card.name}</span>
-                  <span className="strip-place">{card.place}</span>
-                </span>
               </span>
             </button>
           ))}
