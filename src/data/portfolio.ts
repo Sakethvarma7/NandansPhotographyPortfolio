@@ -56,7 +56,21 @@ const photo = (id: number, alt: string): GalleryImage => ({
   alt,
 });
 
-/* Placeholder pool — replaced when the real finals arrive. */
+/*
+ * Placeholder pool — replaced when the real finals arrive.
+ *
+ * KNOWN LIMIT, deliberate: all fourteen frames are weddings, couples or
+ * rituals. There is no birthday, no family group, no baby shower and no solo
+ * portrait in here, so "Birthday / Family" and "Portrait" are necessarily
+ * showing couple photographs. That is not a wiring mistake — it is the pool
+ * being wrong for those two categories, and no amount of re-indexing fixes
+ * it. Those covers become correct the moment Nandan's own frames land.
+ *
+ * The offsets below ARE meaningful for the categories the pool can serve:
+ * index 9 is a verified haldi ceremony and index 10 is verified expecting
+ * parents, so haldi-mehendi, maternity and baby-shower point at them
+ * explicitly. Don't renumber them casually.
+ */
 const pool: GalleryImage[] = [
   photo(38681643, 'Wedding ceremony in colourful traditional dress'),
   photo(11749508, 'Couple in traditional wedding attire'),
@@ -71,7 +85,7 @@ const pool: GalleryImage[] = [
   photo(12738034, 'Expecting parents photographed together'),
   photo(38047785, 'A quiet moment before a celebration'),
   photo(32151000, 'Still frame from a wedding film'),
-  photo(38823745, 'Guests celebrating at a wedding'),
+  photo(38823745, 'Couple photographed at night before a celebration'),
 ];
 
 /**
@@ -174,7 +188,7 @@ const categories: WorkCategory[] = [
         { id: 'gautam-tanvi', name: 'Gautam & Tanvi', place: 'Bhopal · 2023' },
         { id: 'kabir-radhika', name: 'Kabir & Radhika', place: 'Amritsar · 2024' },
       ]),
-      collection('candid', 'Candid', 'candid', 9, [
+      collection('candid', 'Candid', 'candid', 1, [
         { id: 'sandeep-aparna', name: 'Sandeep & Aparna', place: 'Visakhapatnam · 2025' },
       ]),
     ],
@@ -240,9 +254,9 @@ const categories: WorkCategory[] = [
     label: 'Baby shower',
     tagline: 'The sweetest kind of waiting',
     description: 'The afternoon before the family gets bigger.',
-    cover: at(11),
+    cover: at(10),
     collections: [
-      collection('photography', 'Photography', 'photography', 11, [
+      collection('photography', 'Photography', 'photography', 10, [
         { id: 'the-menons', name: 'The Menon Family', place: 'Kozhikode · 2024' },
       ]),
     ],
@@ -329,6 +343,16 @@ export const portfolioConfig = {
       'Other',
     ],
   },
+
+  /*
+   * Brief: "Do you have written testimonials from past clients?" ->
+   * "No — I will collect some." So this is deliberately empty. It is NOT a
+   * placeholder to be filled with invented quotes: fabricated praise attributed
+   * to couples who did not write it is a real problem on a real business's
+   * site. The section renders an honest waiting state until these arrive, and
+   * appears properly the moment one is added.
+   */
+  testimonials: [] as { quote: string; couple: string; place: string }[],
 
   /* Brief: watermark everything, and disable right-click / download. */
   protectImages: true,

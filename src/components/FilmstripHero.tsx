@@ -37,9 +37,36 @@ const IDLE_AFTER = 3600;
 const IDLE_RATE = 0.00042;
 const IDLE_SWING = 2.45;
 const EASE_BASE = 0.001;
-const COMPACT_AT = 650;
+/*
+ * The angle the deck fans along, and the width below which it applies.
+ *
+ * Desktop keeps a level line — there is room across a wide screen for the
+ * fan to read without help. A phone has a third of that width and most of
+ * the height going spare, so the same level fan runs out of room sideways
+ * while leaving the stage empty above and below. Tipping the line borrows
+ * that vertical space: the cards travel further apart for the same screen
+ * width, and the deck reads as a raked hand rather than a flat strip.
+ */
+const SLANT_DEG = 50;
+const SLANT_BELOW = 650;
+
+/*
+ * The unit vector the deck fans along.
+ *
+ * The render loop lays the cards out on this axis and the drag projects the
+ * finger onto it, so both read the same source. Above SLANT_BELOW it resolves
+ * to (1, 0) — a level line, and a drag that is pure horizontal travel, which
+ * is exactly the desktop behaviour rather than a parallel code path.
+ */
+function slantAxis() {
+  const rad = window.innerWidth < SLANT_BELOW ? (SLANT_DEG * Math.PI) / 180 : 0;
+  return { cos: Math.cos(rad), sin: Math.sin(rad) };
+}
 /* Finger travel that advances one card. Low enough that a short flick lands. */
 const DRAG_PER_CARD = 76;
+
+const prefersReducedMotion = () =>
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 type Card = { src: string; alt: string; name: string; place: string };
 
@@ -93,7 +120,7 @@ export default function FilmstripHero() {
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage) return;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = prefersReducedMotion();
     let raf = 0;
     let previous = performance.now();
     st.current.lastInput = previous;
@@ -113,9 +140,25 @@ export default function FilmstripHero() {
 
       s.phase += (s.target - s.phase) * ease;
 
-      const compact = window.innerWidth < COMPACT_AT;
+      /*
+       * One layout, every width.
+       *
+       * There used to be a "compact" branch below 650px that stood the deck
+       * up and ran it vertically — cards stacked down the screen instead of
+       * fanning across it. It made the phone a different product from the
+       * desktop: the same photographs, arranged along the other axis.
+       *
+       * The fan now runs horizontally everywhere. hGap already floors at
+       * 112px, which against a 180px phone card gives roughly the same
+       * gap-to-card ratio the desktop has at 238px — so the fan reads the
+       * same, just with fewer cards in view, which is what a narrow screen
+       * should do.
+       */
       const hGap = Math.min(168, Math.max(112, window.innerWidth * 0.116));
-      const vGap = Math.min(122, Math.max(88, window.innerHeight * 0.112));
+      /* Spread is resolved along the slanted axis, so cards keep their even
+         spacing measured ALONG the line rather than only across it. */
+      const { cos: slantCos, sin: slantSin } = slantAxis();
+      const slant = Math.atan2(slantSin, slantCos);
       const nearest = ((Math.round(s.phase) % count) + count) % count;
       if (nearest !== lastActive) { lastActive = nearest; setActive(nearest); }
 
@@ -128,15 +171,21 @@ export default function FilmstripHero() {
         const side = Math.max(0, 1 - d / 5);
         const dir = Math.sign(delta);
 
-        const x = compact ? delta * 24 + Math.sin(delta * 0.9) * 25 : delta * hGap;
-        const y = compact ? delta * vGap : d * 8 + s.pointerY * focus * 10;
+        const spread = delta * hGap;
+        const x = spread * slantCos;
+        const y = spread * slantSin + d * 8 + s.pointerY * focus * 10;
         const z = focus * 145 - d * 148;
         const scale = 0.54 + side * 0.15 + focus * 0.54;
-        const rotateX = compact ? delta * 2.1 : -s.pointerY * focus * 3.5;
-        const rotateY = compact
-          ? -delta * 5
-          : -dir * (d > 0.2 ? 14 + Math.min(d, 3) * 5 : 0) + s.pointerX * focus * 3;
-        const rotateZ = compact ? delta * -1.4 : delta * 0.7;
+        const rotateX = -s.pointerY * focus * 3.5;
+        const rotateY = -dir * (d > 0.2 ? 14 + Math.min(d, 3) * 5 : 0) + s.pointerX * focus * 3;
+        /*
+         * The lean is scaled by (1 - focus), so the card in focus sits dead
+         * straight and the rest tip further as they recede. A raked line of
+         * upright cards reads as a bug, but a raked SELECTED card reads as a
+         * crooked photograph — the eye forgives a tilt in the deck and does
+         * not forgive one in the picture it is looking at.
+         */
+        const rotateZ = delta * 0.7 + slant * (180 / Math.PI) * 0.22 * (1 - focus);
 
         card.style.setProperty('--focus', focus.toFixed(4));
         card.style.zIndex = String(Math.round(1000 - d * 100));
@@ -156,7 +205,7 @@ export default function FilmstripHero() {
 
   /* Autoplay, the site's own behaviour, layered on top. */
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (prefersReducedMotion()) return;
     const timer = window.setInterval(() => {
       const s = st.current;
       if (!s.engaged && !s.drag) step(1);
@@ -181,11 +230,24 @@ export default function FilmstripHero() {
     const s = st.current;
     if (!stage) return;
     const rect = stage.getBoundingClientRect();
-    const compact = window.innerWidth < COMPACT_AT;
 
     if (s.drag) {
-      /* The compact deck runs vertically, so the finger does too. */
-      const travel = compact ? event.clientY - s.drag.y0 : event.clientX - s.drag.x0;
+      /*
+       * Travel is the finger PROJECTED onto the fan's axis, not its horizontal
+       * component.
+       *
+       * The deck rakes at 50 degrees on a phone, so that is the direction a
+       * thumb naturally moves along it. Measuring only clientX threw away most
+       * of that gesture — a swipe straight down the line registered as barely
+       * any movement, because the line is mostly vertical.
+       *
+       * A dot product with the axis means dragging along the deck advances it
+       * at full rate, and dragging across the deck does almost nothing, which
+       * is the behaviour the raked line implies.
+       */
+      const axis = slantAxis();
+      const travel =
+        (event.clientX - s.drag.x0) * axis.cos + (event.clientY - s.drag.y0) * axis.sin;
       s.drag.moved = Math.max(s.drag.moved, Math.abs(travel));
       s.target = s.drag.base - travel / DRAG_PER_CARD;
       s.lastInput = performance.now();
@@ -253,7 +315,7 @@ export default function FilmstripHero() {
       </div>
 
       <div
-        className="strip-stage"
+        className={`strip-stage ${portfolioConfig.heroVideo ? 'has-film' : ''}`}
         ref={stageRef}
         onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
@@ -269,6 +331,28 @@ export default function FilmstripHero() {
         aria-roledescription="carousel"
         aria-label="Photographs from the portfolio — use the arrow keys"
       >
+        {/*
+          Brief: "No — please cut one from one of my films." There is no clip
+          yet, so heroVideo is null and this renders nothing. The moment a file
+          is dropped into the config it becomes the stage's ground, behind the
+          deck: silent, looping, and never autoplaying for anyone who has asked
+          for less motion.
+        */}
+        {portfolioConfig.heroVideo && (
+          <video
+            className="strip-film"
+            src={portfolioConfig.heroVideo}
+            poster={cards[0]?.src}
+            autoPlay={!prefersReducedMotion()}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-hidden="true"
+            tabIndex={-1}
+          />
+        )}
+
         <div className="strip-deck" ref={deckRef}>
           {cards.map((card, i) => (
             <button
@@ -285,9 +369,16 @@ export default function FilmstripHero() {
             >
               <span className="strip-portrait">
                 <img src={card.src} alt={card.alt} draggable={false} loading={i < 4 ? 'eager' : 'lazy'} />
-                {portfolioConfig.watermark.enabled && (
-                  <span className="strip-mark" aria-hidden="true">{portfolioConfig.watermark.text}</span>
-                )}
+                {/*
+                  No watermark in the hero, deliberately.
+
+                  portfolioConfig.watermark still governs every gallery and
+                  lightbox image; this one surface opts out. The hero is the
+                  first thing anyone sees and it is meant to be immersive —
+                  a caption stamped across the corner of each frame breaks
+                  that for the sake of protecting an image that is already
+                  240px wide and mostly out of focus.
+                */}
               </span>
             </button>
           ))}
@@ -295,8 +386,8 @@ export default function FilmstripHero() {
       </div>
 
       <div className="strip-nav">
-        <button onClick={() => step(-1)} aria-label="Previous photograph"><ArrowLeft size={20} /></button>
-        <button onClick={() => step(1)} aria-label="Next photograph"><ArrowRight size={20} /></button>
+        <button onClick={() => step(-1)} aria-label="Previous photograph"><ArrowLeft size={22} strokeWidth={1.25} /></button>
+        <button onClick={() => step(1)} aria-label="Next photograph"><ArrowRight size={22} strokeWidth={1.25} /></button>
       </div>
 
       <p className="strip-sr" aria-live="polite">Photograph {active + 1} of {count}</p>

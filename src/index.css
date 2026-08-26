@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400&family=DM+Sans:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -51,7 +51,19 @@ em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: itali
 .brand:hover .brand-mark { transform: rotate(-6deg) scale(1.05); }
 .brand-mark img { width: 100%; height: 100%; object-fit: cover; }
 
-.nav-links { display: flex; align-items: center; min-width: 0; gap: clamp(14px, 2.2vw, 34px); font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+/*
+ * 13px/500 against the CTA's 12px/400.
+ *
+ * The two were identical — same family, same size, same weight — and the
+ * links still read as the lighter of the pair, because light-on-dark always
+ * looks bolder than dark-on-light at the same weight. The pill was winning
+ * on optics, not on type.
+ *
+ * Note the @import above now carries DM Mono 500. Without it, font-weight:500
+ * gets synthesised by the browser, which smears the stems rather than using
+ * the drawn weight — worse than leaving it at 400.
+ */
+.nav-links { display: flex; align-items: center; min-width: 0; gap: clamp(13px, 2.05vw, 32px); font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; letter-spacing: .11em; text-transform: uppercase; }
 .nav-links button { position: relative; padding: 8px 2px; transition: opacity .25s ease; }
 .nav-links button:hover, footer button:hover, footer a:hover { opacity: .58; }
 .nav-links button::after { content: ''; position: absolute; left: 0; right: 0; bottom: 2px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .38s var(--ease-out); }
@@ -75,12 +87,24 @@ em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: itali
 /* Brief: watermark everything, disable right-click and download. */
 .shot { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; }
 .shot img { width: 100%; height: 100%; object-fit: cover; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; pointer-events: none; }
-.shot-mark { position: absolute; right: 11px; bottom: 9px; z-index: 3; font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: .17em; text-transform: uppercase; color: rgba(255, 255, 255, .58); text-shadow: 0 1px 3px rgba(0, 0, 0, .55); pointer-events: none; white-space: nowrap; }
+.shot-mark { position: absolute; right: 11px; bottom: 9px; z-index: 3; font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: .17em; text-transform: uppercase; color: rgba(255, 255, 255, .17); text-shadow: none; mix-blend-mode: soft-light; pointer-events: none; white-space: nowrap; }
 
 /* -------------------------------------------- HOME — CATEGORY SECTIONS --- */
 .collections { padding: 20px 0 0; }
-.band { padding: 74px 6vw; }
-.band + .band { border-top: 1px solid rgba(29, 32, 29, .08); }
+.band { padding: 74px 6vw; background: #ebe4d6; }
+/*
+ * Alternating grounds break up a long scroll. Both stay in one hue family — a
+ * hard jump to white would read as a copy-paste seam rather than as rhythm —
+ * but the step between them is now 16.9 points of luminance rather than 6.7,
+ * so the rhythm is actually visible while scrolling.
+ *
+ * Deepening the beige cost contrast, so the text inside a band is darkened to
+ * match: at #ebe4d6 the old body colour measured 4.09:1 and failed AA. The
+ * values below are checked against the darker ground, not the page.
+ */
+.collections .band:nth-of-type(even) { background: #fbf9f5; }
+/* The colour change is the divider now; a rule as well would be belt and braces. */
+.band + .band { border-top: 0; }
 .band.no-head { padding: 20px 8vw 110px; }
 /*
  * Heading, subtitle and images as one unit.
@@ -96,7 +120,7 @@ em { font-family: 'Playfair Display', serif; font-weight: 400; font-style: itali
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   column-gap: 24px; row-gap: 7px;
-  margin-bottom: 26px;
+  margin-bottom: 44px;
 }
 .band-head h2 { grid-area: 1 / 1; margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-size: clamp(26px, 3vw, 40px); letter-spacing: -.01em; }
 .band-head h2 em { font-size: .82em; }
@@ -297,12 +321,26 @@ footer { background: #26211a; color: #e8e2d4; padding: 55px 4.5vw 25px; display:
   .hero { min-height: auto; padding: 44px 0 50px; }
 
   .band { padding: 48px 6vw; }
-  .band-head { grid-template-columns: 1fr; row-gap: 6px; margin-bottom: 20px; }
+  .band-head { grid-template-columns: 1fr; row-gap: 6px; margin-bottom: 30px; }
   .band-head h2 { grid-area: auto; }
   .band-head p { grid-area: auto; font-size: 11px; }
   .band-rule { display: none; }
   /* Collections sit side by side and swipe, for EVERY category — never stacked. */
-  .band-grid, .band-grid[data-count='1'], .band-grid[data-count='3'] { display: flex; grid-template-columns: none; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; -ms-overflow-style: none; margin: 0 -6vw; padding: 0 6vw 4px; }
+  /*
+   * `.band > .band-grid` is load-bearing, not decoration.
+   *
+   * `.band > *` further down sets margin-inline:auto at specificity (0,1,0).
+   * A bare `.band-grid` here is also (0,1,0) and loses on order, so the
+   * -6vw bleed died for any band the list did not name explicitly — which
+   * was every two-card band. They kept the 6vw padding without the bleed,
+   * so they sat 6vw further right than their own heading and their cards
+   * came out narrower than everyone else's.
+   *
+   * (0,1,1) beats the auto margin outright, for every data-count there is
+   * or ever will be. The bare `.band-grid` stays for the grids that live
+   * outside a .band (collection and film pages).
+   */
+  .band-grid, .band > .band-grid, .band-grid[data-count='1'], .band-grid[data-count='3'] { display: flex; grid-template-columns: none; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; -ms-overflow-style: none; margin: 0 -6vw; padding: 0 6vw 4px; }
   .band-grid::-webkit-scrollbar { display: none; }
   .band-grid > .band-card, .band-grid[data-count='1'] .band-card, .band-grid[data-count='3'] .band-card:first-child { flex: 0 0 76%; grid-column: auto; aspect-ratio: 4 / 3; scroll-snap-align: center; }
 
@@ -517,11 +555,14 @@ a.channel:hover { transform: translateX(3px); }
 /* Content had no ceiling — on a 27" display the type ran the full width and the
    measure fell apart. Sections keep their vw padding but stop growing. */
 .page-intro, .work-index, .couple-section, .story-gallery, .about-page,
-.contact-page, .band, .home-note, .collection-head, .story-head, .notfound-actions,
+.contact-page, .home-note, .collection-head, .story-head, .notfound-actions,
 .story-film, footer {
   max-width: 1560px;
   margin-inline: auto;
 }
+/* The band itself runs full width so its ground reaches the edges; the content
+   inside it keeps the same ceiling as everything else. */
+.band > * { max-width: 1560px; margin-inline: auto; }
 
 /* Large display type breaks badly at arbitrary widths; balance stops the
    one-word last line. `pretty` does the same for paragraphs where supported. */
@@ -808,36 +849,140 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
      page, so it scrolls on to the next section. */
   touch-action: auto;
   -webkit-user-select: none; user-select: none;
+  /*
+   * The ledger rules are gone.
+   *
+   * This used to carry a repeating-linear-gradient ruling a line every 110px
+   * plus column rules every 25% — a paper-and-ink conceit that read, at any
+   * real viewing distance, as horizontal banding across the hero. Ruled paper
+   * competes with photographs: it puts a hard, regular, man-made frequency
+   * directly behind images whose whole appeal is that they are not regular.
+   *
+   * What is left is the pointer light and the paper colour. The surface still
+   * has somewhere for the eye to go — it just no longer has a grid on it.
+   */
   background:
-    linear-gradient(90deg, rgba(80, 58, 31, .08) 1px, transparent 1px) 50% 0 / 25% 100%,
-    repeating-linear-gradient(0deg, transparent 0, transparent 109px, rgba(72, 52, 30, .13) 110px, transparent 111px),
-    radial-gradient(circle at var(--pointer-x) 48%, rgba(255, 246, 220, .78), transparent 34%),
-    #d8c9ad;
+    /*
+     * An ELLIPSE sized in percentages of the stage, not a circle.
+     *
+     * A circle's radius resolves against the farthest corner, so on a wide
+     * stage this light reached roughly 290px from centre while the stage is
+     * only ~235px tall. It was still bright where the box ended, and the box
+     * ending cut it dead — which drew a horizontal seam across the hero at
+     * the top and bottom of the stage. That seam is the banding that survives
+     * removing the ruled lines.
+     *
+     * 44% of the stage height brings it to zero just inside its own edge, so
+     * the light lands on paper instead of stopping at a border.
+     */
+    radial-gradient(ellipse 38% 44% at var(--pointer-x) 48%, rgba(255, 246, 220, .5), transparent);
   animation: hero-in 1s var(--ease-out) .1s both;
 }
 .strip-stage:focus-visible { outline: 2px solid #fdfaf3; outline-offset: -6px; }
 
-/* Grain, multiplied over everything. */
-.strip-stage::before {
-  content: ''; position: absolute; inset: 0; z-index: 5; pointer-events: none; opacity: .27;
+/*
+ * Grain, on the hero rather than on the stage — and underneath the cards.
+ *
+ * It used to live on .strip-stage at z-index 5, which put it ABOVE the deck:
+ * every photograph in the carousel was being multiplied with grain. That is
+ * the texture competing with the photos. Being stage-only, it also tinted a
+ * band the exact height of the stage and left a seam where that band ended.
+ *
+ * Full-bleed on .strip at z-index 0, it tints nothing but paper. The stage no
+ * longer paints its own ground so this shows through it.
+ *
+ * .27 was visible as texture. At .09 it is the thing you only notice when you
+ * take it away — enough to stop the tan reading as flat digital fill.
+ */
+/*
+ * The ruled paper, restored — but held off the deck.
+ *
+ * The rules were never drawn ON the photographs. They sit behind them. What
+ * put them across the images is that the carousel fades out-of-focus cards to
+ * as little as .13 opacity, so a translucent card shows whatever is behind
+ * it — and what was behind it was ruled paper. Deleting the texture fixed the
+ * photographs by stripping the surface bare everywhere else too.
+ *
+ * The mask keeps both: the centre of the hero, where the deck lives, is clear
+ * paper, so even the faintest card has nothing to reveal. Outward from there
+ * the rules fade in and the empty margins get their texture back.
+ *
+ * Full-bleed on .strip rather than on the stage, so the ruling does not stop
+ * at the stage edge and redraw the seam that was just removed.
+ */
+.strip::after {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background:
-    repeating-radial-gradient(circle at 12% 18%, rgba(71, 51, 30, .17) 0 .5px, transparent .7px 4px),
-    repeating-radial-gradient(circle at 78% 71%, rgba(255, 255, 255, .35) 0 .5px, transparent .8px 5px);
+    linear-gradient(90deg, rgba(80, 58, 31, .08) 1px, transparent 1px) 50% 0 / 25% 100%,
+    repeating-linear-gradient(0deg, transparent 0, transparent 109px, rgba(72, 52, 30, .13) 110px, transparent 111px);
+  -webkit-mask-image: radial-gradient(ellipse 44% 50% at 50% 50%, transparent 44%, #000 82%);
+  mask-image: radial-gradient(ellipse 44% 50% at 50% 50%, transparent 44%, #000 82%);
+}
+
+.strip::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: .035;
+  /*
+   * Real noise, via feTurbulence — NOT repeating-radial-gradient.
+   *
+   * The old pair of repeating-radial-gradients was the actual source of the
+   * banding. A repeating radial draws concentric RINGS, and a few hundred
+   * pixels from their origin those rings are locally almost straight, so the
+   * hero was covered in faint arcs reading as horizontal lines. Sampled down
+   * a clear column it oscillated 24/255 every two pixels — a periodic moiré,
+   * which is the opposite of grain.
+   *
+   * fractalNoise is genuinely random, so it has no frequency to beat against
+   * the pixel grid. Inline as a data URI, so it stays a single self-contained
+   * stylesheet with no image request.
+   */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
   mix-blend-mode: multiply;
 }
-/* Edge vignette, so cards leave the frame rather than stopping at it. */
+/*
+ * Edge vignette, so cards leave the frame rather than stopping at it.
+ *
+ * Masked vertically. The gradient darkens the left and right edges, but it
+ * lives on the stage, so it used to stop dead where the stage stops — which
+ * drew a horizontal edge across the outer thirds of the hero, top and bottom.
+ * Measured as a step of ~8/255 per channel, which is well within sight.
+ *
+ * The mask fades the vignette out before it reaches its own top and bottom,
+ * so it darkens the sides without announcing where the box ends.
+ */
 .strip-stage::after {
   content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 78%, transparent 100%);
   background: linear-gradient(90deg, rgba(84, 58, 29, .19), transparent 14%, transparent 86%, rgba(84, 58, 29, .19));
 }
 
 .strip::after {
   content: ''; position: absolute; inset: 0; z-index: 7; pointer-events: none; opacity: .22;
-  background:
-    repeating-radial-gradient(circle at 12% 18%, rgba(71, 51, 30, .17) 0 .5px, transparent .7px 4px),
-    repeating-radial-gradient(circle at 78% 71%, rgba(255, 255, 255, .35) 0 .5px, transparent .8px 5px);
+  /*
+   * Real noise, via feTurbulence — NOT repeating-radial-gradient.
+   *
+   * The old pair of repeating-radial-gradients was the actual source of the
+   * banding. A repeating radial draws concentric RINGS, and a few hundred
+   * pixels from their origin those rings are locally almost straight, so the
+   * hero was covered in faint arcs reading as horizontal lines. Sampled down
+   * a clear column it oscillated 24/255 every two pixels — a periodic moiré,
+   * which is the opposite of grain.
+   *
+   * fractalNoise is genuinely random, so it has no frequency to beat against
+   * the pixel grid. Inline as a data URI, so it stays a single self-contained
+   * stylesheet with no image request.
+   */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
   mix-blend-mode: multiply;
 }
+
+.strip-film { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; opacity: .5; filter: saturate(.7) contrast(1.02); pointer-events: none; }
+/* With a film behind it the paper rules would fight the footage, so the stage
+   drops to a plain warm wash and lets the clip carry the surface. */
+.strip-stage.has-film { background: #cbbb9c; }
+.strip-stage.has-film::after { background: linear-gradient(90deg, rgba(60, 44, 24, .34), transparent 16%, transparent 84%, rgba(60, 44, 24, .34)); }
 
 .strip-deck { position: absolute; inset: 0; z-index: 2; transform-style: preserve-3d; }
 
@@ -845,29 +990,79 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 .strip-card {
   --focus: 0;
   position: absolute; top: 50%; left: 50%;
-  width: clamp(154px, 16.8vw, 238px); aspect-ratio: .72;
-  padding: 0; border: 1px solid rgba(47, 34, 19, .42); border-radius: 4px;
-  background: #e7d9bd; color: #f3e7ce;
+  /*
+   * Sized against BOTH axes, which is the fix for the focused card being
+   * clipped at top and bottom.
+   *
+   * The width came from 16.8vw and the stage height from clamp(430px, 54vh,
+   * 560px) — one keyed to the viewport's width, the other to its height, with
+   * nothing relating them. On a wide, short window (1440x620, 1920x700, a
+   * laptop with a toolbar) the width term ran to its 238px maximum while the
+   * stage sat on its 430px floor, and the card came out 452px tall inside it.
+   *
+   * A focused card ends up about 1.9x its own width once scale (1.23) and the
+   * perspective at translateZ 145 (1.11) are applied, so 26vh keeps the peak
+   * inside even the floored stage. It only binds below roughly 915px of
+   * viewport height; above that 16.8vw is still the smaller term and nothing
+   * about the desktop layout changes.
+   */
+  width: clamp(154px, min(16.8vw, 26vh), 238px); aspect-ratio: .72;
+  /*
+   * No mat, no border, no inner rule.
+   *
+   * The card used to be a tan plate with the photograph inset 7px inside it
+   * and a hairline drawn around that — a print in a mount. It reads vintage,
+   * and it costs every image 14px of its own width to say so. The photograph
+   * now IS the card: it bleeds to the edge and the three-layer shadow does
+   * the work of separating it from the paper.
+   */
+  padding: 0; border: 0; border-radius: 3px;
+  background: #3a3226; color: #f3e7ce;
+  /*
+   * Three layers, not one.
+   *
+   * A single shadow — which is what this was — reads as a card stuck to a
+   * board, because real light never produces one evenly dark shape. What
+   * sells depth is a tight contact shadow where the object is closest, a
+   * mid penumbra, and a very wide, very faint ambient wash. Each layer is
+   * weaker and broader than the one before it.
+   *
+   * The negative spreads matter as much as the blurs: they pull each layer
+   * back under the card before it blurs outward, so the shadow disperses
+   * instead of ringing the plate in a dark halo.
+   *
+   * All three scale with --focus, so a card gains depth as it comes forward
+   * and flattens toward the page as it recedes.
+   */
   box-shadow:
-    0 calc(10px + var(--focus) * 24px) calc(18px + var(--focus) * 36px) rgba(57, 38, 19, calc(.2 + var(--focus) * .26)),
-    inset 0 0 0 1px rgba(255, 255, 255, .64);
+    0 calc(2px + var(--focus) * 5px) calc(5px + var(--focus) * 9px) -3px rgba(41, 27, 13, calc(.14 + var(--focus) * .12)),
+    0 calc(12px + var(--focus) * 26px) calc(30px + var(--focus) * 52px) -14px rgba(48, 32, 16, calc(.15 + var(--focus) * .19)),
+    0 calc(24px + var(--focus) * 48px) calc(64px + var(--focus) * 104px) -26px rgba(48, 32, 16, calc(.13 + var(--focus) * .2));
   appearance: none; outline: none;
   transform-style: preserve-3d; will-change: transform, opacity, filter;
-  /* Only the photographs take the gesture, and once one does it owns both
-     axes — the compact deck runs vertically, so the drag does too. */
+  /*
+   * none, because the deck is raked.
+   *
+   * This was pan-y while the fan ran level: the deck took the horizontal axis
+   * and the page kept the vertical one. That split stops working at 50
+   * degrees. A swipe along the raked line is MOSTLY vertical, so the browser
+   * claimed it as a page scroll and the hero slid away under a gesture that
+   * was plainly aimed at the deck.
+   *
+   * A photograph now claims the whole gesture, and the drag decides what the
+   * gesture meant by projecting it onto the fan's axis. The paper around the
+   * deck still has touch-action auto, so a swipe that starts off a card
+   * scrolls the page exactly as before — which was the original rule: the
+   * images take the gesture, the paper does not.
+   */
   touch-action: none;
   cursor: grab;
 }
 .strip-card:active { cursor: grabbing; }
-/* An inner rule that firms up as the card comes into focus. */
-.strip-card::before {
-  content: ''; position: absolute; inset: 5px; z-index: 3; pointer-events: none;
-  border: 1px solid rgba(28, 22, 14, calc(.12 + var(--focus) * .12));
-}
 .strip-card:focus-visible { box-shadow: 0 26px 50px rgba(57, 38, 19, .42), 0 0 0 4px rgba(197, 167, 109, .6); }
 
 /* The caption bar is gone, so the portrait takes the whole plate. */
-.strip-portrait { position: absolute; inset: 7px; overflow: hidden; background: #766a58; }
+.strip-portrait { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; background: #3a3226; }
 .strip-portrait img {
   display: block; width: 100%; height: 100%; object-fit: cover;
   -webkit-user-drag: none; pointer-events: none;
@@ -879,8 +1074,8 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 
 /* Caption bar — the authored anatomy, carrying couple and place. */
 
-.strip-nav { position: relative; z-index: 6; display: flex; justify-content: space-between; align-items: center; width: min(760px, 84vw); margin-top: 14px; color: #fdfaf3; animation: hero-in .9s var(--ease-out) .22s both; }
-.strip-nav button { width: 48px; height: 48px; display: grid; place-items: center; opacity: .72; transition: opacity .3s ease, transform .35s var(--ease-out); }
+.strip-nav { position: relative; z-index: 6; display: flex; justify-content: space-between; align-items: center; width: min(1440px, 92vw); margin-top: 14px; color: #fdfaf3; animation: hero-in .9s var(--ease-out) .22s both; }
+.strip-nav button { width: 48px; height: 48px; display: grid; place-items: center; opacity: .5; transition: opacity .3s ease, transform .35s var(--ease-out); }
 .strip-nav button:hover { opacity: 1; }
 .strip-nav button:first-child:hover { transform: translateX(-5px); }
 .strip-nav button:last-child:hover { transform: translateX(5px); }
@@ -902,11 +1097,22 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
   .strip { min-height: auto; padding: 36px 0 42px; }
   .strip-stage {
     height: clamp(420px, 62vh, 540px);
+    /*
+     * The ruled paper had a SECOND declaration here — tighter than the
+     * desktop one (88px rows, columns every 50%) — so removing the rules from
+     * the base rule cleaned up desktop and left the phone fully ruled. Worse
+     * on a narrow screen, since the same grid is drawn across a third of the
+     * width. Both are gone now; this override only sets the height and the
+     * light, and inherits the paper from the base rule.
+     */
     background:
-      linear-gradient(90deg, rgba(80, 58, 31, .08) 1px, transparent 1px) 50% 0 / 50% 100%,
-      repeating-linear-gradient(0deg, transparent 0, transparent 87px, rgba(72, 52, 30, .13) 88px, transparent 89px),
-      radial-gradient(circle at 50% 50%, rgba(255, 246, 220, .78), transparent 35%),
-      #d8c9ad;
+      radial-gradient(ellipse 54% 42% at 50% 50%, rgba(255, 246, 220, .5), transparent);
+  }
+  /* Standing vertically, the deck occupies a tall narrow column rather than a
+     wide band, so the clearing has to change shape with it. */
+  .strip::after {
+    -webkit-mask-image: radial-gradient(ellipse 62% 46% at 50% 54%, transparent 48%, #000 84%);
+    mask-image: radial-gradient(ellipse 62% 46% at 50% 54%, transparent 48%, #000 84%);
   }
   .strip-card { width: clamp(142px, 47vw, 180px); }
   .strip-nav { width: 88vw; }
@@ -972,10 +1178,13 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
      transform here would simply be overwritten. Hover therefore works
      through light and shadow only, which the loop does not touch. */
   .strip-card { transition: box-shadow .4s var(--ease-out); }
+  /* Same three layers, lifted — hovering must not collapse a dispersed
+     shadow back into a single hard one. */
   .strip-card:hover {
     box-shadow:
-      0 calc(16px + var(--focus) * 26px) calc(26px + var(--focus) * 38px) rgba(57, 38, 19, calc(.3 + var(--focus) * .26)),
-      inset 0 0 0 1px rgba(255, 255, 255, .78);
+      0 calc(3px + var(--focus) * 5px) calc(7px + var(--focus) * 9px) -3px rgba(41, 27, 13, calc(.16 + var(--focus) * .12)),
+      0 calc(18px + var(--focus) * 28px) calc(40px + var(--focus) * 56px) -14px rgba(48, 32, 16, calc(.19 + var(--focus) * .19)),
+      0 calc(34px + var(--focus) * 52px) calc(80px + var(--focus) * 112px) -26px rgba(48, 32, 16, calc(.17 + var(--focus) * .2));
   }
   .strip-card:hover .strip-portrait img { filter: saturate(calc(.78 + var(--focus) * .32)) contrast(1.06); }
 }
@@ -993,4 +1202,139 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
   .depth-photo:hover .shot img, .band-card:hover .shot img,
   .couple-card:hover .shot img, .work-row:hover .row-image .shot img,
   .strip-card:hover .strip-portrait img { transform: none; }
+}
+
+
+/* ============================================================
+   CLIENT WORDS
+   Empty by design until real quotes exist — see Testimonials.tsx.
+   ============================================================ */
+
+.voices { padding: 76px 6vw 84px; background: #f4f1eb; max-width: 1560px; margin-inline: auto; }
+.voices-head { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 24px; row-gap: 7px; margin-bottom: 30px; }
+.voices-head h2 { grid-area: 1 / 1; margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-size: clamp(26px, 3vw, 40px); letter-spacing: -.01em; }
+.voices-head h2 em { font-size: .82em; }
+.voices-head p { grid-area: 2 / 1; margin: 0; font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: .13em; text-transform: uppercase; color: #5a6158; }
+
+.voices-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+.voice { margin: 0; padding: 30px 28px; border-radius: 4px; background: #fbf9f5; box-shadow: 0 18px 40px -24px rgba(58, 46, 30, .5); }
+.voice blockquote { margin: 0 0 20px; font-family: 'Playfair Display', serif; font-size: 19px; line-height: 1.5; color: #1d201d; }
+.voice figcaption { display: flex; flex-direction: column; gap: 4px; }
+.voice-couple { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #1d201d; }
+.voice-place { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #5a6158; }
+
+/* Waiting state — the shape, honestly labelled. */
+.voice.is-pending { display: grid; place-items: center; gap: 10px; min-height: 190px; background: #f7f4ee; border: 1px dashed rgba(29, 32, 29, .2); box-shadow: none;
+  background-image: repeating-linear-gradient(135deg, rgba(197, 167, 109, .05) 0 8px, transparent 8px 16px); }
+.voice-mark { margin: 0; font-family: 'Playfair Display', serif; font-size: 46px; line-height: .6; color: rgba(138, 109, 58, .4); }
+.voice-wait { margin: 0; display: flex; flex-direction: column; gap: 7px; align-items: center; text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #5a6158; }
+.voice-wait small { font-size: 10px; color: #6f766d; letter-spacing: .1em; }
+
+.voices-note { max-width: 54ch; margin: 24px 0 0; color: #4f564d; }
+.voices-link { font: inherit; color: #1d201d; text-decoration: underline; text-underline-offset: 3px; transition: opacity .25s ease; }
+.voices-link:hover { opacity: .62; }
+
+@media (max-width: 900px) { .voices-grid { grid-template-columns: 1fr; gap: 14px; } .voice.is-pending { min-height: 140px; } }
+@media (max-width: 640px) { .voices { padding: 50px 6vw 56px; } }
+
+
+/* Text sits on the deeper band ground, so it is toned for that, not for the
+   page: #686f66 measured 4.09:1 here and failed. These clear 5:1. */
+.band .body-copy { color: #565d54; }
+.band .band-aside-count { color: #565d54; }
+.band .band-head p { color: #5a6158; }
+
+/* ============================================================
+   CARD LABELS — ON THE PHOTOGRAPH, ANCHORED TO THE FOOT
+   ------------------------------------------------------------
+   The label used to sit dead centre, so "PHOTOGRAPHY" landed
+   across the middle of the photograph it was naming — straight
+   over the faces, which is exactly where the eye goes first.
+
+   It stays on the image, but drops to the bottom-left corner
+   and shares that corner with the count. The scrim is retuned
+   to match: it was a wash reaching 55% up the frame to carry
+   centred text, and is now a shorter, darker foot that fades
+   out by 40%, so the middle of every photograph is clear.
+   ============================================================ */
+.band-card-shade, .couple-shade {
+  background: linear-gradient(0deg, rgba(10, 13, 10, .74) 0%, rgba(10, 13, 10, .34) 18%, rgba(10, 13, 10, 0) 44%);
+}
+
+.band-card-label, .couple-name {
+  left: 24px;
+  top: auto;
+  bottom: 42px;
+  transform: none;
+  max-width: calc(100% - 48px);
+  white-space: normal;
+  text-align: left;
+  line-height: 1.2;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, .5);
+}
+/* Smaller than the centred version was: at the foot of the frame this is a
+   caption on the photograph, not a title across it. */
+/*
+ * The collection label — a display serif, at display size.
+ *
+ * This went through a caption phase (DM Sans, 15px) that was solving the
+ * wrong problem. The complaint about the original was never the typeface:
+ * it was that Playfair sat dead centre across the faces, at lowercase
+ * tracking, so the caps jammed into one dark block.
+ *
+ * A display serif genuinely does fail at caption size — the thin strokes are
+ * the first thing to thin out over a busy photograph — but the answer is not
+ * to swap in a sans. It is to stop setting a display face at caption size.
+ * Playfair is cut for exactly this: large caps, open tracking, high contrast.
+ *
+ * So it keeps its scale, gains the air the capitals were missing, and simply
+ * moves off the middle of the frame to sit at the foot.
+ */
+.band-card-label {
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+  font-size: clamp(21px, 2.15vw, 33px);
+  letter-spacing: .065em;
+  /* Tracking adds space after the LAST letter too, which visually pulls the
+     word off its left margin. Half of it back re-hangs the word flush. */
+  margin-left: -.033em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  /* At this weight the hairlines need help holding against a bright frame. */
+  text-shadow: 0 1px 16px rgba(0, 0, 0, .45);
+}
+
+.couple-name { font-size: clamp(18px, 1.6vw, 26px); letter-spacing: .005em; }
+
+/* bottom:42px reserves room for the count. Cards without one — every card on
+   the home page — were leaving that space empty, so the label floated. */
+.band-card:not(:has(.band-card-count)) .band-card-label { bottom: 26px; }
+
+.band-card-count, .couple-card small {
+  left: 24px;
+  right: auto;
+  bottom: 22px;
+  transform: none;
+  text-align: left;
+}
+
+/* The play button had been nudged off-centre to clear the old centred label.
+   With the label gone from the middle it can sit true. */
+.band-card .play-button, .couple-card .play-button { top: 50%; }
+
+@media (hover: hover) and (pointer: fine) {
+  /* .82 was dark enough to carry a large centred title. The label now has its
+     own scrim, so the photograph itself no longer needs dimming that hard. */
+  .band-card:hover .shot img,
+  .couple-card:hover .shot img { filter: brightness(.94); }
+  /* A caption tracking out by .09em reads as a glitch at this size. */
+  .band-card:hover .band-card-label { letter-spacing: .085em; }
+}
+
+@media (max-width: 760px) {
+  .band-card-label, .couple-name { left: 16px; bottom: 34px; max-width: calc(100% - 32px); }
+  .band-card:not(:has(.band-card-count)) .band-card-label { bottom: 20px; }
+  .band-card-label { letter-spacing: .055em; }
+  .band-card-count, .couple-card small { left: 16px; bottom: 16px; }
 }

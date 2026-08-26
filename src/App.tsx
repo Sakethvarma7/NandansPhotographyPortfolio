@@ -5,6 +5,7 @@ import {
 import { ArrowLeft, ArrowRight, ArrowUpRight, Instagram, Mail, Menu, MessageCircle, Phone, Play, Search, X } from 'lucide-react';
 import SearchOverlay from '@/components/SearchOverlay';
 import FilmstripHero from '@/components/FilmstripHero';
+import Testimonials from '@/components/Testimonials';
 import {
   filmCategories,
   findCategory,
@@ -434,6 +435,7 @@ function Home({ navigate }: { navigate: Nav }) {
           <CategoryBand key={category.id} category={category} navigate={navigate} />
         ))}
       </div>
+      <Testimonials navigate={navigate} />
       <section className="home-note">
         <p>Move through the collection slowly. Every photograph holds a story.</p>
         <button className="home-note-cta" onClick={() => navigate('/contact')}>Start an enquiry <ArrowUpRight size={16} /></button>
