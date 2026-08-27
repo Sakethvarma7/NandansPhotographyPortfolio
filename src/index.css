@@ -842,38 +842,92 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 .hero-wordmark em { display: block; font-size: .5em; letter-spacing: .02em; margin-top: 4px; }
 
 /*
- * Stepped stage. Frames are absolutely positioned and placed by their signed
- * offset from centre, so the deck can wrap forever without ever reflowing.
- * touch-action: pan-y keeps vertical page scrolling with the browser.
+ * The wheel.
+ *
+ * Cards are pinned to the rim of one very large circle whose centre sits far
+ * below the stage, and the circle turns. That geometry is the whole point: on
+ * a real wheel the tilt travels WITH the card, so a frame arrives at the left
+ * edge leaning, straightens as it crosses the middle, and leans the other way
+ * as it leaves. A strip of cards at fixed angles cannot do that — the tilt
+ * would stay stuck to the card instead of to its position.
+ *
+ * It is still one CSS animation on one element. Rotating .hero-wheel carries
+ * every card with it as a single composited transform, so nothing runs
+ * per-frame JavaScript.
+ *
+ * The radius is expressed in card-steps rather than pixels, so the rim
+ * spacing stays equal to the card's own width at every breakpoint without a
+ * magic number per size.
+ *
+ * The seam closes by construction — eight steps is exactly one image set.
  */
-.hero-stage { position: relative; z-index: 1; width: 100%; height: 440px; --gap: 300px; touch-action: pan-y; cursor: grab; -webkit-user-select: none; user-select: none; }
-.hero-stage.is-dragging { cursor: grabbing; }
-.hero-stage:focus-visible { outline: 1px solid rgba(253, 250, 243, .8); outline-offset: 8px; border-radius: 3px; }
+.hero-stage {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  overflow: hidden;
+  --card-w: clamp(150px, 17.5vw, 240px);
+  --rim-gap: clamp(26px, 3.4vw, 62px);
+  --arc: calc(var(--card-w) + var(--rim-gap));
 
-/* easeOutQuint: leaves fast, lands soft. Interrupting it mid-flight re-eases
-   from wherever the frame currently is, so rapid swipes stay continuous. */
-.hero-frame { position: absolute; left: 50%; top: 50%; width: 300px; height: 418px; border-radius: 2px; overflow: hidden;
-  z-index: var(--z, 1); opacity: var(--f, 1);
-  transform: translate3d(calc(-50% + (var(--o) * var(--gap)) + var(--drag, 0px)), -50%, 0) scale(var(--s, 1));
-  box-shadow: 0 30px 60px -28px rgba(46, 38, 24, .66);
-  transition: transform .62s cubic-bezier(.22, 1, .36, 1), opacity .62s cubic-bezier(.22, 1, .36, 1), box-shadow .62s ease;
-  will-change: transform, opacity; backface-visibility: hidden; }
-/* Under the finger the deck must track exactly, not ease towards the finger. */
-.hero-stage.is-dragging .hero-frame { transition: none; }
-.hero-frame .shot img { transform: translateZ(0); }
-.hero-frame.is-active { box-shadow: 0 46px 88px -30px rgba(46, 38, 24, .8); }
-.hero-frame.is-far { opacity: 0; pointer-events: none; }
+  /*
+   * --k IS the radius, expressed in card-steps: the circle is --k arc-lengths
+   * around. Saying it that way is what lets the angle between two cards fall
+   * out as a plain number, because a step of one arc-length on a circle of
+   * radius k arc-lengths subtends exactly 1/k radians — and CSS has no trig.
+   *
+   * Raise --k for a bigger, flatter circle. It costs nothing: the card count
+   * is set by how much arc has to be covered, not by the radius.
+   */
+  --k: 20;
+  --R: calc(var(--k) * var(--arc));
+  --step: calc(57.2958deg / var(--k));   /* one radian in degrees, over k */
+  height: calc(var(--card-w) * 4 / 3 + 74px);
+}
 
-/* Flanking the centre frame: bare glyphs, no chrome, no counter. Generous hit
-   area for touch. */
-.hero-nav { position: relative; z-index: 4; display: flex; justify-content: space-between; align-items: center; width: min(640px, 76vw); margin: -6px auto 0; color: #fdfaf3; }
-.hero-nav button { width: 48px; height: 48px; display: grid; place-items: center; opacity: .72; transition: opacity .3s ease, transform .35s cubic-bezier(.22, 1, .36, 1); }
-.hero-nav button:hover { opacity: 1; }
-.hero-nav button:first-child:hover { transform: translateX(-5px); }
-.hero-nav button:last-child:hover { transform: translateX(5px); }
-.hero-nav button:focus-visible { outline: 1px solid #fdfaf3; outline-offset: 2px; border-radius: 50%; }
+.hero-wheel {
+  position: absolute;
+  left: 50%;
+  /* The circle's centre: one radius below the middle of the stage, so the top
+     of the rim lands where the cards should be. */
+  top: calc(50% + var(--R));
+  width: 0;
+  height: 0;
+  animation: wheel 78s linear infinite;
+  will-change: transform;
+}
+/*
+ * Anticlockwise, so the rim's top edge travels leftwards — and only far enough
+ * to bring the next repeat of the image set into the same place. Eight steps
+ * later the arrangement is identical, so the restart is invisible.
+ */
+@keyframes wheel {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(calc(-8 * var(--step))); }
+}
 
-.hero-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* Content that moves on its own for more than five seconds needs a way to be
+   stopped (WCAG 2.2.2). Hovering the wheel or tabbing into it halts it. */
+.hero-stage:hover .hero-wheel,
+.hero-stage:focus-within .hero-wheel { animation-play-state: paused; }
+.hero-stage:focus-visible { outline: 1px solid rgba(253, 250, 243, .8); outline-offset: -6px; border-radius: 4px; }
+
+.hero-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--card-w);
+  aspect-ratio: 3 / 4;
+  border-radius: clamp(14px, 1.5vw, 22px);
+  overflow: hidden;
+  /* Read left to right: turn to this card's place on the rim, ride out one
+     radius to it, then centre the card on that point. */
+  transform: rotate(calc(var(--i) * var(--step))) translateY(calc(-1 * var(--R))) translate(-50%, -50%);
+  box-shadow: 0 26px 52px -26px rgba(46, 38, 24, .62);
+  backface-visibility: hidden;
+}
+.hero-card .shot { border-radius: inherit; }
+.hero-card .shot img { transform: translateZ(0); }
 
 .hero-title { position: relative; z-index: 3; text-align: center; color: #fdfaf3; margin-top: 22px; }
 .hero-title h2 { margin: 0; font-family: 'Libre Caslon Text', serif; font-weight: 400; font-style: italic; font-size: clamp(32px, 4.6vw, 56px); letter-spacing: .01em; }
@@ -888,28 +942,25 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 /* The hero introduces itself once, top-down. */
 .hero-wordmark { animation: hero-in .9s cubic-bezier(.2,.7,.2,1) both; }
 .hero-stage    { animation: hero-in 1s cubic-bezier(.2,.7,.2,1) .1s both; }
-.hero-nav      { animation: hero-in .9s cubic-bezier(.2,.7,.2,1) .22s both; }
 .hero-title    { animation: hero-in .9s cubic-bezier(.2,.7,.2,1) .26s both; }
 .hero-scroll   { animation: hero-in .9s cubic-bezier(.2,.7,.2,1) .38s both; }
 @keyframes hero-in { from { opacity: 0; transform: translate3d(0, 18px, 0); } to { opacity: 1; transform: none; } }
 
 @media (max-width: 900px) {
-  .hero-stage { height: 400px; --gap: 236px; }
-  .hero-frame { width: 244px; height: 344px; }
+  .hero-stage { --card-w: clamp(150px, 21vw, 210px); --rim-gap: clamp(22px, 3vw, 44px); --k: 16; }
 }
 
 @media (max-width: 640px) {
   .hero { min-height: auto; padding: 30px 0 50px; }
   .hero-wordmark { margin-bottom: 14px; }
-  .hero-nav { width: 86vw; margin-top: 0; }
-  .hero-stage { height: 336px; --gap: 176px; }
-  .hero-frame { width: 196px; height: 280px; }
+  .hero-stage { --card-w: clamp(132px, 38vw, 178px); --rim-gap: 20px; --k: 11; }
   .hero-title { margin-top: 24px; padding: 0 6vw; }
   .hero-title p { letter-spacing: .14em; line-height: 1.9; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-wordmark, .hero-stage, .hero-nav, .hero-title, .hero-scroll { animation: none; }
+  .hero-wordmark, .hero-stage, .hero-title, .hero-scroll { animation: none; }
+  .hero-wheel { animation: none; }
   .hero-scroll svg { animation: none; }
 }
 
