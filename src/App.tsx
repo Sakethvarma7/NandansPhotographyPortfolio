@@ -559,8 +559,22 @@ function HeroSlideshow() {
   useEffect(() => {
     const wheel = wheelRef.current;
     if (!wheel || typeof wheel.animate !== 'function') return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
+    /*
+     * The wheel deliberately keeps turning under prefers-reduced-motion.
+     *
+     * That setting normally means stop, and this used to. The client asked for
+     * it to turn on every device regardless, having found the hero frozen on
+     * his own phone with Reduce Motion switched on — which on iOS a great many
+     * people have, often for battery rather than for vestibular reasons.
+     *
+     * It is a considered exception rather than an oversight. What makes it
+     * defensible is the character of the motion: one slow, linear, constant
+     * drift of about 30px a second on a single transform, with no parallax, no
+     * scaling, no flashing and nothing tied to scroll position — the kinds of
+     * motion that actually provoke symptoms. Everything else on the site still
+     * honours the setting; only this turns.
+     */
     const spin = wheel.animate(
       [{ transform: 'rotate(0deg)' }, { transform: `rotate(${-geo.step}deg)` }],
       { duration: WHEEL_STEP_MS, easing: 'linear', fill: 'forwards' },
