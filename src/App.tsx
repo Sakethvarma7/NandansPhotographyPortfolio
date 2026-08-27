@@ -976,9 +976,11 @@ function About() {
             explained to you, the aunt who cries at exactly the right moment. Warm, traditional, and
             unhurried.
           </p>
+          {/* The point of this paragraph is coverage, not headcount. Saying it
+              as "a small team" turned a reassurance into a doubt. */}
           <p className="body-copy">
-            We work as a small team so there is always someone watching the room while someone else
-            watches the couple. You will not be asked to pose for very much.
+            The day is never covered by one camera alone — someone is watching the room while
+            someone else stays with the couple. You will not be asked to pose for very much.
           </p>
         </div>
         <div className="about-image is-pending">

@@ -826,10 +826,17 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
    touching it. See HeroSlideshow in App.tsx.
    ============================================================ */
 
-.hero { position: relative; min-height: calc(100dvh - 74px); padding: 70px 0 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #b3a894; overflow: hidden; }
+/* Top padding trimmed to pay for the space the wordmark now takes below it,
+   so lifting the mark off the photograph does not push the scroll cue under
+   the fold on a 900px-tall window. */
+.hero { position: relative; min-height: calc(100dvh - 74px); padding: 40px 0 38px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #b3a894; overflow: hidden; }
 .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 38%, rgba(238, 231, 216, .5), transparent 62%); pointer-events: none; }
 
-.hero-wordmark { position: relative; z-index: 3; display: flex; align-items: flex-start; gap: 16px; color: #fdfaf3; text-align: center; margin-bottom: -46px; }
+/* The mark sits ABOVE the deck, clear of it. This was -46px, which pulled the
+   stage up underneath so the italic "Photography" landed across the top of the
+   centre photograph — over the busiest part of the frame, and reading as a
+   layout bug rather than as deliberate overlap. */
+.hero-wordmark { position: relative; z-index: 3; display: flex; align-items: flex-start; gap: 16px; color: #fdfaf3; text-align: center; margin-bottom: 20px; }
 .hero-wordmark span { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .18em; opacity: .8; padding-top: 12px; }
 .hero-wordmark h1 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-size: clamp(34px, 5vw, 62px); line-height: .95; letter-spacing: .04em; text-shadow: 0 2px 24px rgba(60, 48, 30, .35); }
 .hero-wordmark em { display: block; font-size: .5em; letter-spacing: .02em; margin-top: 4px; }
@@ -839,7 +846,7 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
  * offset from centre, so the deck can wrap forever without ever reflowing.
  * touch-action: pan-y keeps vertical page scrolling with the browser.
  */
-.hero-stage { position: relative; z-index: 1; width: 100%; height: 470px; --gap: 300px; touch-action: pan-y; cursor: grab; -webkit-user-select: none; user-select: none; }
+.hero-stage { position: relative; z-index: 1; width: 100%; height: 440px; --gap: 300px; touch-action: pan-y; cursor: grab; -webkit-user-select: none; user-select: none; }
 .hero-stage.is-dragging { cursor: grabbing; }
 .hero-stage:focus-visible { outline: 1px solid rgba(253, 250, 243, .8); outline-offset: 8px; border-radius: 3px; }
 
@@ -868,12 +875,12 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 
 .hero-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-.hero-title { position: relative; z-index: 3; text-align: center; color: #fdfaf3; margin-top: 34px; }
+.hero-title { position: relative; z-index: 3; text-align: center; color: #fdfaf3; margin-top: 22px; }
 .hero-title h2 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-style: italic; font-size: clamp(32px, 4.6vw, 56px); letter-spacing: .01em; }
 .hero-title h2 span { font-style: normal; letter-spacing: .06em; }
 .hero-title p { margin: 12px 0 0; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; opacity: .82; }
 
-.hero-scroll { position: relative; z-index: 3; display: flex; align-items: center; gap: 10px; margin-top: 40px; color: #fdfaf3; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; opacity: .8; transition: opacity .25s ease; }
+.hero-scroll { position: relative; z-index: 3; display: flex; align-items: center; gap: 10px; margin-top: 24px; color: #fdfaf3; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; opacity: .8; transition: opacity .25s ease; }
 .hero-scroll:hover { opacity: 1; }
 .hero-scroll svg { animation: cue 2.4s var(--ease-in-out) infinite; }
 @keyframes cue { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
@@ -892,8 +899,8 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 }
 
 @media (max-width: 640px) {
-  .hero { min-height: auto; padding: 44px 0 50px; }
-  .hero-wordmark { margin-bottom: -28px; }
+  .hero { min-height: auto; padding: 30px 0 50px; }
+  .hero-wordmark { margin-bottom: 14px; }
   .hero-nav { width: 86vw; margin-top: 0; }
   .hero-stage { height: 336px; --gap: 176px; }
   .hero-frame { width: 196px; height: 280px; }

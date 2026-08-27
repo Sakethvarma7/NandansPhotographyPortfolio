@@ -305,12 +305,20 @@ export const portfolioConfig = {
 
   categories,
 
-  /* Brief: a team, but the client does not want members listed individually. */
+  /*
+   * Brief: a team, but the client does not want members listed individually.
+   *
+   * He also does not want the word "small". It was in the first draft — "a
+   * small team" — and it undersells him: to a family booking a three-hundred
+   * guest wedding, "small" reads as a question about whether the day can
+   * actually be covered, which is the opposite of what the sentence was for.
+   * Say what the studio DOES, never how few of them there are.
+   */
   about: {
     eyebrow: 'ABOUT THE STUDIO',
     heading: 'Warm, traditional, and made to be looked at for years.',
     description:
-      "Nandan's Photography is a small team photographing weddings and the celebrations around them. We work quietly, stay close to the family, and photograph the day as it actually happens.",
+      "Nandan's Photography is a studio photographing weddings and the celebrations around them. We work quietly, stay close to the family, and photograph the day as it actually happens.",
   },
 
   /* Brief: exactly what he needs to know from an enquiry. */
