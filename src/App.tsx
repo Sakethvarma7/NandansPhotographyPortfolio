@@ -594,10 +594,10 @@ function HeroSlideshow() {
 
   /*
    * Content that moves on its own for more than five seconds needs a way to be
-   * stopped (WCAG 2.2.2). Pausing is gated to real pointers: iOS applies
-   * :hover on tap and leaves it applied, so on a phone one stray tap near the
-   * hero would otherwise stop the wheel for good — which looks exactly like an
-   * animation that never started.
+   * stopped (WCAG 2.2.2), so a keyboard can halt the wheel and a mouse can rest
+   * on it. Neither route may fire for touch: iOS applies :hover on tap and
+   * leaves it applied, and a tap also focuses anything focusable — between them
+   * they stopped the wheel dead the moment a finger landed on the photographs.
    */
   const setPaused = (paused: boolean) => {
     const wheel = wheelRef.current;
@@ -606,6 +606,21 @@ function HeroSlideshow() {
   };
   const finePointer = () =>
     typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /*
+   * The stage is focusable so a keyboard can reach it and stop the wheel — but
+   * TAPPING a focusable element focuses it too, so on a phone one touch anywhere
+   * on the photographs stopped the rotation, and it only started again when
+   * something else was touched.
+   *
+   * Distinguished by watching for a pointer immediately beforehand rather than
+   * by asking :focus-visible. That property is the right idea but the wrong
+   * tool here: Safari only grew it in 15.4, and browsers hand it out for
+   * programmatic focus as well, so it answers "should this look focused"
+   * rather than "did a finger do this". A pointerdown lands before the focus
+   * it causes, which answers exactly the question being asked.
+   */
+  const focusFromPointer = useRef(false);
 
   return (
     <section className="hero" id="hero">
@@ -624,8 +639,14 @@ function HeroSlideshow() {
         aria-label="Photographs from the portfolio"
         onMouseEnter={() => { if (finePointer()) setPaused(true); }}
         onMouseLeave={() => { if (finePointer()) setPaused(false); }}
-        onFocus={() => setPaused(true)}
-        onBlur={() => setPaused(false)}
+        onPointerDown={() => { focusFromPointer.current = true; }}
+        onFocus={() => {
+          const tapped = focusFromPointer.current;
+          focusFromPointer.current = false;
+          /* Only a keyboard arriving here should stop the wheel. */
+          if (!tapped) setPaused(true);
+        }}
+        onBlur={() => { focusFromPointer.current = false; setPaused(false); }}
       >
         {/*
           Both the wheel and its cards turn about the SAME point — one radius
