@@ -1119,29 +1119,25 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 
 
 /* ============================================================
-   SECTION HEADINGS — a slow bronze sheen
+   SECTION HEADINGS — a fixed bronze gradient
    ============================================================ */
 
 /*
- * The display headings carry a gradient that drifts across them, in the gold
- * the site already uses for the accent rather than a new colour: near-black
- * ink with a single narrow glint of #8a6d3a passing through, once every
- * sixteen seconds.
+ * The display headings run from ink to the gold the site already uses for its
+ * accent, once across the width of the words. Fixed, not animated: a sweeping
+ * version came first and it was worse in two ways — for part of every cycle the
+ * visible slice was flat ink, so the heading looked like it had no gradient at
+ * all, and a heading that keeps moving pulls attention away from the
+ * photographs, which is the opposite of the job.
  *
- * A NARROW glint, deliberately. A heading washed end-to-end in gradient reads
- * as a template effect; most of the word staying ink, with the light moving
- * over it the way it would over gold thread, reads as a material. It is also
- * what keeps the type legible — every stop sits between 14.6:1 and 4.3:1 on
- * the cream ground, so the lightest moment of the sweep still clears the
- * large-text floor with room to spare. #c5a76d, the paler gold used elsewhere,
- * measures 2.04:1 and is deliberately not in here.
+ * The ramp is legible end to end. #1d201d measures 14.6:1 on the cream ground
+ * and #8a6d3a, the last stop, 4.3:1 — so even the palest letter clears the
+ * large-text floor with room to spare. #c5a76d, the lighter gold used elsewhere
+ * on the site, comes out at 2.04:1 as text and is deliberately not in here.
  *
- * The loop is seamless because the flat ink at each end is exactly as wide as
- * the visible window — a third of the image. The first and last frames of the
- * sweep are therefore both "all ink" and identical, so the restart cannot be
- * seen. That 34% is a floor, not a taste: any wider and the heading sits plain
- * for most of the cycle, any narrower and the two ends stop matching and the
- * loop visibly pops.
+ * Running dark to light also puts the gold on the last word, which on these
+ * headings is the italic one — "Wedding COLLECTION", "Every story DESERVES ITS
+ * FRAME" — so the emphasis the type was already making gets the colour too.
  */
 .band-head h2,
 .voices-head h2,
@@ -1161,25 +1157,15 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
   .story-head h1,
   .about-page h2 {
     background-image: linear-gradient(
-      94deg,
+      96deg,
       #1d201d 0%,
-      #1d201d 34%,
-      #4a3b23 40%,
-      #8a6d3a 50%,
-      #4a3b23 60%,
-      #1d201d 66%,
-      #1d201d 100%
+      #33291b 26%,
+      #5a4728 58%,
+      #7a6034 82%,
+      #8a6d3a 100%
     );
-    background-size: 300% 100%;
-    background-repeat: no-repeat;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: head-sheen 16s linear infinite;
   }
-}
-
-@keyframes head-sheen {
-  from { background-position: 0% 50%; }
-  to   { background-position: 100% 50%; }
 }
