@@ -845,112 +845,57 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
  * The wheel.
  *
  * Cards are pinned to the rim of one very large circle whose centre sits far
- * below the stage, and the circle turns. That geometry is the whole point: on
- * a real wheel the tilt travels WITH the card, so a frame arrives at the left
- * edge leaning, straightens as it crosses the middle, and leans the other way
- * as it leaves. A strip of cards at fixed angles cannot do that — the tilt
- * would stay stuck to the card instead of to its position.
+ * below the stage, and the circle turns. That geometry is the point: on a real
+ * wheel the tilt travels WITH the card, so a frame arrives at the left edge
+ * leaning, straightens as it crosses the middle, and leans the other way as it
+ * leaves. A strip of cards at fixed angles cannot do that.
  *
- * It is still one CSS animation on one element. Rotating .hero-wheel carries
- * every card with it as a single composited transform, so nothing runs
- * per-frame JavaScript.
- *
- * The radius is expressed in card-steps rather than pixels, so the rim
- * spacing stays equal to the card's own width at every breakpoint without a
- * magic number per size.
- *
- * The seam closes by construction — eight steps is exactly one image set.
+ * SIZES AND ANGLES ARE NOT SET HERE. Radius, step angle, card size, stage
+ * height and the sweep are all computed in HeroSlideshow and arrive as inline
+ * pixels and degrees, because the custom-property version of this resolved
+ * unreliably on iOS Safari and failed silently when it did. What is left below
+ * is only the styling that does not vary.
  */
 .hero-stage {
   position: relative;
   z-index: 1;
   width: 100%;
   overflow: hidden;
-  --card-w: clamp(148px, 15.5vw, 220px);
-  --rim-gap: clamp(22px, 3vw, 56px);
-  --arc: calc(var(--card-w) + var(--rim-gap));
-
   /*
-   * --k IS the radius, expressed in card-steps: the circle is --k arc-lengths
-   * around. Saying it that way is what lets the angle between two cards fall
-   * out as a plain number, because a step of one arc-length on a circle of
-   * radius k arc-lengths subtends exactly 1/k radians — and CSS has no trig.
-   *
-   * Raise --k for a bigger, flatter circle. It costs nothing: the card count
-   * is set by how much arc has to be covered, not by the radius.
+   * The rim reaches far outside this box, so the stage carries thousands of
+   * pixels of overflow it never shows. iOS treats that as somewhere a finger
+   * can scroll, and swallows the vertical drag that should have moved the
+   * page — the hero became a dead zone you could not scroll past. pan-y hands
+   * vertical intent straight back to the document.
    */
-  --k: 28;
-  --R: calc(var(--k) * var(--arc));
-  --step: calc(57.2958deg / var(--k));   /* one radian in degrees, over k */
-  /*
-   * A card away from the middle of the arc sits LOWER than one at the top —
-   * that drop is the curve, and it is the whole reason the wheel reads as a
-   * wheel. It also has to be paid for in height, or the stage's own overflow
-   * shears the bottom off exactly the cards that are leaning most.
-   *
-   * The drop grows with the square of the screen width (it is R minus R cos θ,
-   * and θ is set by how much arc the viewport spans), so the allowance is a vw
-   * term rather than a constant. A fixed 74px was enough at the width it was
-   * eyeballed on and nowhere else.
-   */
-  height: calc(var(--card-w) * 4 / 3 + clamp(62px, 7.8vw, 158px));
+  touch-action: pan-y;
+  /* Height comes from the component; this is only a floor if it is ever absent. */
+  min-height: 240px;
 }
 
 .hero-wheel {
   position: absolute;
-  left: 50%;
-  /* The circle's centre: one radius below the middle of the stage, so the top
-     of the rim lands where the cards should be. */
-  top: calc(50% + var(--R));
-  width: 0;
-  height: 0;
-  animation: wheel 78s linear infinite;
-  will-change: transform;
+  inset: 0;
+  /*
+   * No will-change here on purpose. Promoting this element pre-allocates a
+   * compositing layer the size of the whole visible arc — measured at 4740px
+   * across on a 390px phone — and iOS drops layers that exceed its memory
+   * budget, silently, which reads as a wheel that never moves. The Web
+   * Animations transform gets composited on its own merits without it.
+   */
 }
-/*
- * Anticlockwise, so the rim's top edge travels leftwards — and only far enough
- * to bring the next repeat of the image set into the same place. Eight steps
- * later the arrangement is identical, so the restart is invisible.
- */
-@keyframes wheel {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(calc(-8 * var(--step))); }
-}
-
-/* Content that moves on its own for more than five seconds needs a way to be
-   stopped (WCAG 2.2.2). Hovering the wheel or tabbing into it halts it. */
-.hero-stage:hover .hero-wheel,
-.hero-stage:focus-within .hero-wheel { animation-play-state: paused; }
 .hero-stage:focus-visible { outline: 1px solid rgba(253, 250, 243, .8); outline-offset: -6px; border-radius: 4px; }
 
 .hero-card {
   position: absolute;
-  left: 0;
-  top: 0;
-  width: var(--card-w);
-  aspect-ratio: 3 / 4;
+  left: 50%;
+  top: 50%;
   border-radius: clamp(14px, 1.5vw, 22px);
   overflow: hidden;
-  /* Read left to right: turn to this card's place on the rim, ride out one
-     radius to it, then centre the card on that point. */
-  transform: rotate(calc(var(--i) * var(--step))) translateY(calc(-1 * var(--R))) translate(-50%, -50%);
   box-shadow: 0 26px 52px -26px rgba(46, 38, 24, .62);
-  backface-visibility: hidden;
 }
 .hero-card .shot { border-radius: inherit; }
 .hero-card .shot img { transform: translateZ(0); }
-
-/*
- * The wider the screen, the more arc it spans, and the drop at the edges goes
- * up with the square of that. Left alone, a large monitor either shears the
- * leaning cards off at the stage's edge or forces the hero taller than the
- * window. Growing the radius instead keeps the visible slice of arc — and so
- * the drop — roughly constant at every width, and has the happy side effect of
- * making the circle genuinely enormous on the screens with room to show it.
- */
-@media (min-width: 1280px) { .hero-stage { --k: 36; } }
-@media (min-width: 1600px) { .hero-stage { --k: 40; } }
-@media (min-width: 2200px) { .hero-stage { --k: 52; } }
 
 .hero-title { position: relative; z-index: 3; text-align: center; color: #fdfaf3; margin-top: 16px; }
 .hero-title h2 { margin: 0; font-family: 'Libre Caslon Text', serif; font-weight: 400; font-style: italic; font-size: clamp(32px, 4.6vw, 56px); letter-spacing: .01em; }
@@ -969,21 +914,15 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 .hero-scroll   { animation: hero-in .9s cubic-bezier(.2,.7,.2,1) .38s both; }
 @keyframes hero-in { from { opacity: 0; transform: translate3d(0, 18px, 0); } to { opacity: 1; transform: none; } }
 
-@media (max-width: 900px) {
-  .hero-stage { --card-w: clamp(150px, 21vw, 210px); --rim-gap: clamp(20px, 2.6vw, 40px); --k: 22; }
-}
-
 @media (max-width: 640px) {
   .hero { min-height: auto; padding: 30px 0 50px; }
   .hero-wordmark { margin-bottom: 14px; }
-  .hero-stage { --card-w: clamp(132px, 38vw, 178px); --rim-gap: 20px; --k: 15; }
   .hero-title { margin-top: 24px; padding: 0 6vw; }
   .hero-title p { letter-spacing: .14em; line-height: 1.9; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .hero-wordmark, .hero-stage, .hero-title, .hero-scroll { animation: none; }
-  .hero-wheel { animation: none; }
   .hero-scroll svg { animation: none; }
 }
 

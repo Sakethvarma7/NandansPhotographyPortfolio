@@ -460,11 +460,131 @@ function CategoryBand({ category, navigate }: { category: WorkCategory; navigate
  * WHEEL_CARDS just has to be a whole number of image sets, and comfortably
  * more than (cards across the widest screen / 2) + one sweep on each side.
  */
-const WHEEL_CARDS = 32;
+
+/*
+ * The wheel's geometry, resolved in JavaScript.
+ *
+ * It used to live in CSS custom properties — radius, step angle and sweep all
+ * derived with calc() and clamp(), and the sweep read back out inside
+ * @keyframes. That is elegant and it worked everywhere except the one browser
+ * that matters most here: on iOS Safari the chain of nested custom properties
+ * inside transform and animation-name resolves unreliably, and when it fails
+ * it fails SILENTLY — no error, no fallback, just a hero that sits still on
+ * the client's phone while looking perfect on every desktop it was tested on.
+ *
+ * So the maths happens here and reaches the DOM as plain pixels and degrees.
+ * There is nothing left for a browser to disagree about. It costs one
+ * measurement on mount and one per resize, and no per-frame work at all.
+ */
+const clamp = (min: number, value: number, max: number) => Math.min(max, Math.max(min, value));
+
+/* How long one card takes to move into its neighbour's place. Eight of these
+   is a full pass of the image set, so this is the old 78s pace per set. */
+const WHEEL_STEP_MS = 9750;
+
+function wheelGeometry(width: number) {
+  /*
+   * A wider screen spans more of the arc, and the drop at its edges grows with
+   * the square of that — so the radius has to grow with the viewport, or a
+   * large monitor either shears the leaning cards or forces the hero taller
+   * than the window. k is the radius counted in card-steps.
+   */
+  let cardW: number, gap: number, k: number;
+  if (width <= 640)       { cardW = clamp(148, width * 0.38, 178);  gap = 20;                          k = 15; }
+  else if (width <= 900)  { cardW = clamp(150, width * 0.21, 210);  gap = clamp(20, width * 0.026, 40); k = 22; }
+  else if (width < 1600)  { cardW = clamp(148, width * 0.155, 220); gap = clamp(22, width * 0.03, 56);  k = 36; }
+  else if (width < 2200)  { cardW = 220;                            gap = 56;                          k = 40; }
+  else                    { cardW = 220;                            gap = 56;                          k = 60; }
+
+  const cardH = cardW * (4 / 3);
+  /* A step of one arc-length on a circle of k arc-lengths subtends 1/k radians. */
+  const step = 57.29578 / k;
+  /*
+   * Only enough cards to cover what is actually seen, plus two either side.
+   *
+   * The ring used to carry a whole image set of spare cards on the arriving
+   * side, so that turning by eight steps would land on an identical
+   * arrangement. That works, but it drags thousands of pixels of card through
+   * one compositing layer — measured at 4478px across on a 390px phone, past
+   * what iOS will hold on to, and it drops the layer without a word.
+   *
+   * Recycling is cheaper: turn by ONE step, then shift which photograph each
+   * card shows by one and start over. A card at minus-one-step showing photo N
+   * is indistinguishable from a card at zero showing photo N+1, so the restart
+   * is invisible and the ring never has to be longer than the screen.
+   */
+  const half = Math.ceil(width / (cardW + gap) / 2) + 2;
+
+  return {
+    cardW, cardH,
+    radius: k * (cardW + gap),
+    step, before: half,
+    count: half * 2 + 1,
+    /* Room for the drop, or the stage's own overflow cuts the leaning cards. */
+    height: cardH + clamp(76, width * 0.08, 180),
+  };
+}
 
 function HeroSlideshow() {
   const images = portfolioConfig.slideshowImages;
-  const wheel = Array.from({ length: WHEEL_CARDS }, (_, i) => images[i % images.length]);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const wheelRef = useRef<HTMLDivElement>(null);
+  const [geo, setGeo] = useState(() => wheelGeometry(typeof window === 'undefined' ? 1440 : window.innerWidth));
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    const measure = () => setGeo(wheelGeometry(window.innerWidth));
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('orientationchange', measure);
+    return () => {
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('orientationchange', measure);
+    };
+  }, []);
+
+  /*
+   * Driven through the Web Animations API rather than a CSS @keyframes rule.
+   * Same compositor-only transform, but the sweep is a literal number computed
+   * above, so there is no keyframe left for a browser to fail to resolve — and
+   * on iOS Safari a custom property inside @keyframes fails silently, which is
+   * indistinguishable from a hero that was simply never animated.
+   *
+   * One step per cycle. When it finishes, `offset` moves on by one and this
+   * effect re-runs: the cleanup cancels the finished animation, dropping the
+   * wheel back to zero rotation, while the same commit has already advanced
+   * every card's photograph by one. The two states are the same picture, so
+   * the restart cannot be seen.
+   */
+  useEffect(() => {
+    const wheel = wheelRef.current;
+    if (!wheel || typeof wheel.animate !== 'function') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const spin = wheel.animate(
+      [{ transform: 'rotate(0deg)' }, { transform: `rotate(${-geo.step}deg)` }],
+      { duration: WHEEL_STEP_MS, easing: 'linear', fill: 'forwards' },
+    );
+    /* fill:forwards holds the finished pose until the next render lands, so
+       there is never a frame showing the old photographs un-rotated. */
+    spin.onfinish = () => setOffset((o) => o + 1);
+    return () => spin.cancel();
+  }, [geo.step, offset]);
+
+  /*
+   * Content that moves on its own for more than five seconds needs a way to be
+   * stopped (WCAG 2.2.2). Pausing is gated to real pointers: iOS applies
+   * :hover on tap and leaves it applied, so on a phone one stray tap near the
+   * hero would otherwise stop the wheel for good — which looks exactly like an
+   * animation that never started.
+   */
+  const setPaused = (paused: boolean) => {
+    const wheel = wheelRef.current;
+    if (!wheel || typeof wheel.getAnimations !== 'function') return;
+    wheel.getAnimations().forEach((a) => (paused ? a.pause() : a.play()));
+  };
+  const finePointer = () =>
+    typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
   return (
     <section className="hero" id="hero">
@@ -474,28 +594,62 @@ function HeroSlideshow() {
         <span>{portfolioConfig.established}</span>
       </div>
 
-      {/*
-        Hovering or tabbing into the wheel stops it. Content that moves on its
-        own for more than five seconds needs a way to be stopped (WCAG 2.2.2),
-        and under prefers-reduced-motion it never starts at all.
-      */}
-      <div className="hero-stage" tabIndex={0} role="group" aria-label="Photographs from the portfolio">
-        <div className="hero-wheel">
-          {wheel.map((image, position) => (
-            <div
-              key={`${image.src}-${position}`}
-              className="hero-card"
-              /* Position on the rim. The angle per step lives in CSS, because
-                 it falls out of the radius, which is a styling decision. */
-              style={{ '--i': position - (WHEEL_CARDS - 1) / 2 } as CSSProperties}
-              /* Every photograph appears four times along the arc. Announcing
-                 all thirty-two would just make the hero sound broken, so only
-                 the first pass is exposed. */
-              aria-hidden={position >= images.length ? true : undefined}
-            >
-              <Shot image={image} eager={position < 5} />
-            </div>
-          ))}
+      <div
+        className="hero-stage"
+        ref={stageRef}
+        style={{ height: `${Math.round(geo.height)}px` }}
+        tabIndex={0}
+        role="group"
+        aria-label="Photographs from the portfolio"
+        onMouseEnter={() => { if (finePointer()) setPaused(true); }}
+        onMouseLeave={() => { if (finePointer()) setPaused(false); }}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+      >
+        {/*
+          Both the wheel and its cards turn about the SAME point — one radius
+          below the middle of the stage — using transform-origin rather than by
+          being positioned there. Laying the wheel out at +radius worked, but it
+          put a box thousands of pixels below the fold and gave the stage that
+          much scrollable overflow, which is somewhere iOS will happily send a
+          finger instead of scrolling the page.
+        */}
+        <div
+          className="hero-wheel"
+          ref={wheelRef}
+          style={{ transformOrigin: `50% calc(50% + ${Math.round(geo.radius)}px)` }}
+        >
+          {Array.from({ length: geo.count }, (_, position) => {
+            const slot = position - geo.before;
+            const image = images[(((slot + offset) % images.length) + images.length) % images.length];
+            const angle = slot * geo.step;
+            return (
+              <div
+                /* Keyed by SLOT, never by image: the photograph in a slot
+                   changes on every recycle, and keying on it would tear the
+                   card down and build it again — a fresh decode and a visible
+                   flash, ten seconds apart, forever. */
+                key={position}
+                className="hero-card"
+                style={{
+                  width: `${Math.round(geo.cardW)}px`,
+                  height: `${Math.round(geo.cardH)}px`,
+                  /* Centred by margins, not by transform, so the origin below
+                     stays measured from the card's own box. */
+                  marginLeft: `${-Math.round(geo.cardW / 2)}px`,
+                  marginTop: `${-Math.round(geo.cardH / 2)}px`,
+                  transformOrigin: `50% calc(50% + ${Math.round(geo.radius)}px)`,
+                  transform: `rotate(${angle.toFixed(3)}deg)`,
+                }}
+                /* Each photograph appears several times along the arc.
+                   Announcing every copy would just make the hero sound broken,
+                   so only one pass is exposed. */
+                aria-hidden={slot < 0 || slot >= images.length ? true : undefined}
+              >
+                <Shot image={image} eager={position < 5} />
+              </div>
+            );
+          })}
         </div>
       </div>
 
