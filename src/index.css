@@ -389,7 +389,7 @@ footer { background: #26211a; color: #e8e2d4; padding: 55px 4.5vw 25px; display:
 /* Keyboard users could not see where they were — every control now says so. */
 :where(button, a, [tabindex]):focus-visible { outline: 2px solid #8a6d3a; outline-offset: 3px; border-radius: 2px; }
 .band-card:focus-visible, .couple-card:focus-visible, .depth-photo:focus-visible { outline-offset: 4px; }
-.lightbox-close:focus-visible, .lightbox-nav:focus-visible, .strip-scroll:focus-visible { outline-color: #f4f1eb; }
+.lightbox-close:focus-visible, .lightbox-nav:focus-visible, .hero-scroll:focus-visible { outline-color: #f4f1eb; }
 
 /* Nav underline that grows from the left rather than just dimming. */
 .nav-links button { position: relative; padding-bottom: 3px; }
@@ -818,314 +818,94 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 }
 
 /* ============================================================
-   HERO FILMSTRIP
-   Surface and grading ported from ThreeUI's CharacterCarousel
-   (filmstrip variant), read from the authored source. Its stage
-   is #d8c9ad — near enough to this site's hero tan that the
-   paper rules, grain and pointer light transplant unchanged.
-   Its orange accent becomes the gold from the logo, and its
-   Arial Narrow becomes Playfair and DM Mono.
+   HERO SLIDESHOW
+   A stepped deck: one centred photograph, its neighbours set
+   back on either side, wrapping forever. Everything here is a
+   CSS transition on transform and opacity — no render loop, no
+   per-frame filters, nothing still moving once you stop
+   touching it. See HeroSlideshow in App.tsx.
    ============================================================ */
 
-/* One continuous paper field. The stage was a different tan from the section
-   around it, which drew a hard seam above and below the deck; the authored
-   stage is full-bleed, so they share the colour. */
-.strip { position: relative; min-height: calc(100dvh - 74px); padding: 54px 0 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #d8c9ad; overflow: hidden; }
+.hero { position: relative; min-height: calc(100dvh - 74px); padding: 70px 0 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #b3a894; overflow: hidden; }
+.hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 38%, rgba(238, 231, 216, .5), transparent 62%); pointer-events: none; }
 
-.strip-wordmark { position: relative; z-index: 6; display: flex; align-items: flex-start; gap: 16px; color: #fdfaf3; text-align: center; margin-bottom: 8px; animation: hero-in .9s var(--ease-out) both; }
-.strip-wordmark span { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .18em; opacity: .82; padding-top: 12px; font-variant-numeric: tabular-nums; }
-.strip-wordmark h1 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-size: clamp(30px, 4.4vw, 56px); line-height: .95; letter-spacing: .04em; text-shadow: 0 2px 24px rgba(60, 48, 30, .38); }
-.strip-wordmark em { display: block; font-size: .5em; letter-spacing: .02em; margin-top: 4px; }
-
-/* The stage. Layered exactly as authored: a centre rule, ledger rules across,
-   a light that tracks the pointer, then the paper itself. */
-.strip-stage {
-  --pointer-x: 50%;
-  position: relative; z-index: 1;
-  width: 100%; height: clamp(430px, 54vh, 560px);
-  overflow: hidden; isolation: isolate;
-  perspective: 1450px;
-  /* The stage itself claims no gestures. A touch on the paper belongs to the
-     page, so it scrolls on to the next section. */
-  touch-action: auto;
-  -webkit-user-select: none; user-select: none;
-  /*
-   * The ledger rules are gone.
-   *
-   * This used to carry a repeating-linear-gradient ruling a line every 110px
-   * plus column rules every 25% — a paper-and-ink conceit that read, at any
-   * real viewing distance, as horizontal banding across the hero. Ruled paper
-   * competes with photographs: it puts a hard, regular, man-made frequency
-   * directly behind images whose whole appeal is that they are not regular.
-   *
-   * What is left is the pointer light and the paper colour. The surface still
-   * has somewhere for the eye to go — it just no longer has a grid on it.
-   */
-  background:
-    /*
-     * An ELLIPSE sized in percentages of the stage, not a circle.
-     *
-     * A circle's radius resolves against the farthest corner, so on a wide
-     * stage this light reached roughly 290px from centre while the stage is
-     * only ~235px tall. It was still bright where the box ended, and the box
-     * ending cut it dead — which drew a horizontal seam across the hero at
-     * the top and bottom of the stage. That seam is the banding that survives
-     * removing the ruled lines.
-     *
-     * 44% of the stage height brings it to zero just inside its own edge, so
-     * the light lands on paper instead of stopping at a border.
-     */
-    radial-gradient(ellipse 38% 44% at var(--pointer-x) 48%, rgba(255, 246, 220, .5), transparent);
-  animation: hero-in 1s var(--ease-out) .1s both;
-}
-.strip-stage:focus-visible { outline: 2px solid #fdfaf3; outline-offset: -6px; }
+.hero-wordmark { position: relative; z-index: 3; display: flex; align-items: flex-start; gap: 16px; color: #fdfaf3; text-align: center; margin-bottom: -46px; }
+.hero-wordmark span { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .18em; opacity: .8; padding-top: 12px; }
+.hero-wordmark h1 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-size: clamp(34px, 5vw, 62px); line-height: .95; letter-spacing: .04em; text-shadow: 0 2px 24px rgba(60, 48, 30, .35); }
+.hero-wordmark em { display: block; font-size: .5em; letter-spacing: .02em; margin-top: 4px; }
 
 /*
- * Grain, on the hero rather than on the stage — and underneath the cards.
- *
- * It used to live on .strip-stage at z-index 5, which put it ABOVE the deck:
- * every photograph in the carousel was being multiplied with grain. That is
- * the texture competing with the photos. Being stage-only, it also tinted a
- * band the exact height of the stage and left a seam where that band ended.
- *
- * Full-bleed on .strip at z-index 0, it tints nothing but paper. The stage no
- * longer paints its own ground so this shows through it.
- *
- * .27 was visible as texture. At .09 it is the thing you only notice when you
- * take it away — enough to stop the tan reading as flat digital fill.
+ * Stepped stage. Frames are absolutely positioned and placed by their signed
+ * offset from centre, so the deck can wrap forever without ever reflowing.
+ * touch-action: pan-y keeps vertical page scrolling with the browser.
  */
-/*
- * The ruled paper, restored — but held off the deck.
- *
- * The rules were never drawn ON the photographs. They sit behind them. What
- * put them across the images is that the carousel fades out-of-focus cards to
- * as little as .13 opacity, so a translucent card shows whatever is behind
- * it — and what was behind it was ruled paper. Deleting the texture fixed the
- * photographs by stripping the surface bare everywhere else too.
- *
- * The mask keeps both: the centre of the hero, where the deck lives, is clear
- * paper, so even the faintest card has nothing to reveal. Outward from there
- * the rules fade in and the empty margins get their texture back.
- *
- * Full-bleed on .strip rather than on the stage, so the ruling does not stop
- * at the stage edge and redraw the seam that was just removed.
- */
-.strip::after {
-  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(80, 58, 31, .08) 1px, transparent 1px) 50% 0 / 25% 100%,
-    repeating-linear-gradient(0deg, transparent 0, transparent 109px, rgba(72, 52, 30, .13) 110px, transparent 111px);
-  -webkit-mask-image: radial-gradient(ellipse 44% 50% at 50% 50%, transparent 44%, #000 82%);
-  mask-image: radial-gradient(ellipse 44% 50% at 50% 50%, transparent 44%, #000 82%);
+.hero-stage { position: relative; z-index: 1; width: 100%; height: 470px; --gap: 300px; touch-action: pan-y; cursor: grab; -webkit-user-select: none; user-select: none; }
+.hero-stage.is-dragging { cursor: grabbing; }
+.hero-stage:focus-visible { outline: 1px solid rgba(253, 250, 243, .8); outline-offset: 8px; border-radius: 3px; }
+
+/* easeOutQuint: leaves fast, lands soft. Interrupting it mid-flight re-eases
+   from wherever the frame currently is, so rapid swipes stay continuous. */
+.hero-frame { position: absolute; left: 50%; top: 50%; width: 300px; height: 418px; border-radius: 2px; overflow: hidden;
+  z-index: var(--z, 1); opacity: var(--f, 1);
+  transform: translate3d(calc(-50% + (var(--o) * var(--gap)) + var(--drag, 0px)), -50%, 0) scale(var(--s, 1));
+  box-shadow: 0 30px 60px -28px rgba(46, 38, 24, .66);
+  transition: transform .62s cubic-bezier(.22, 1, .36, 1), opacity .62s cubic-bezier(.22, 1, .36, 1), box-shadow .62s ease;
+  will-change: transform, opacity; backface-visibility: hidden; }
+/* Under the finger the deck must track exactly, not ease towards the finger. */
+.hero-stage.is-dragging .hero-frame { transition: none; }
+.hero-frame .shot img { transform: translateZ(0); }
+.hero-frame.is-active { box-shadow: 0 46px 88px -30px rgba(46, 38, 24, .8); }
+.hero-frame.is-far { opacity: 0; pointer-events: none; }
+
+/* Flanking the centre frame: bare glyphs, no chrome, no counter. Generous hit
+   area for touch. */
+.hero-nav { position: relative; z-index: 4; display: flex; justify-content: space-between; align-items: center; width: min(640px, 76vw); margin: -6px auto 0; color: #fdfaf3; }
+.hero-nav button { width: 48px; height: 48px; display: grid; place-items: center; opacity: .72; transition: opacity .3s ease, transform .35s cubic-bezier(.22, 1, .36, 1); }
+.hero-nav button:hover { opacity: 1; }
+.hero-nav button:first-child:hover { transform: translateX(-5px); }
+.hero-nav button:last-child:hover { transform: translateX(5px); }
+.hero-nav button:focus-visible { outline: 1px solid #fdfaf3; outline-offset: 2px; border-radius: 50%; }
+
+.hero-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.hero-title { position: relative; z-index: 3; text-align: center; color: #fdfaf3; margin-top: 34px; }
+.hero-title h2 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-style: italic; font-size: clamp(32px, 4.6vw, 56px); letter-spacing: .01em; }
+.hero-title h2 span { font-style: normal; letter-spacing: .06em; }
+.hero-title p { margin: 12px 0 0; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; opacity: .82; }
+
+.hero-scroll { position: relative; z-index: 3; display: flex; align-items: center; gap: 10px; margin-top: 40px; color: #fdfaf3; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; opacity: .8; transition: opacity .25s ease; }
+.hero-scroll:hover { opacity: 1; }
+.hero-scroll svg { animation: cue 2.4s var(--ease-in-out) infinite; }
+@keyframes cue { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+
+/* The hero introduces itself once, top-down. */
+.hero-wordmark { animation: hero-in .9s cubic-bezier(.2,.7,.2,1) both; }
+.hero-stage    { animation: hero-in 1s cubic-bezier(.2,.7,.2,1) .1s both; }
+.hero-nav      { animation: hero-in .9s cubic-bezier(.2,.7,.2,1) .22s both; }
+.hero-title    { animation: hero-in .9s cubic-bezier(.2,.7,.2,1) .26s both; }
+.hero-scroll   { animation: hero-in .9s cubic-bezier(.2,.7,.2,1) .38s both; }
+@keyframes hero-in { from { opacity: 0; transform: translate3d(0, 18px, 0); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 900px) {
+  .hero-stage { height: 400px; --gap: 236px; }
+  .hero-frame { width: 244px; height: 344px; }
 }
 
-.strip::before {
-  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: .035;
-  /*
-   * Real noise, via feTurbulence — NOT repeating-radial-gradient.
-   *
-   * The old pair of repeating-radial-gradients was the actual source of the
-   * banding. A repeating radial draws concentric RINGS, and a few hundred
-   * pixels from their origin those rings are locally almost straight, so the
-   * hero was covered in faint arcs reading as horizontal lines. Sampled down
-   * a clear column it oscillated 24/255 every two pixels — a periodic moiré,
-   * which is the opposite of grain.
-   *
-   * fractalNoise is genuinely random, so it has no frequency to beat against
-   * the pixel grid. Inline as a data URI, so it stays a single self-contained
-   * stylesheet with no image request.
-   */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
-  mix-blend-mode: multiply;
-}
-/*
- * Edge vignette, so cards leave the frame rather than stopping at it.
- *
- * Masked vertically. The gradient darkens the left and right edges, but it
- * lives on the stage, so it used to stop dead where the stage stops — which
- * drew a horizontal edge across the outer thirds of the hero, top and bottom.
- * Measured as a step of ~8/255 per channel, which is well within sight.
- *
- * The mask fades the vignette out before it reaches its own top and bottom,
- * so it darkens the sides without announcing where the box ends.
- */
-.strip-stage::after {
-  content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 78%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 78%, transparent 100%);
-  background: linear-gradient(90deg, rgba(84, 58, 29, .19), transparent 14%, transparent 86%, rgba(84, 58, 29, .19));
-}
-
-.strip::after {
-  content: ''; position: absolute; inset: 0; z-index: 7; pointer-events: none; opacity: .22;
-  /*
-   * Real noise, via feTurbulence — NOT repeating-radial-gradient.
-   *
-   * The old pair of repeating-radial-gradients was the actual source of the
-   * banding. A repeating radial draws concentric RINGS, and a few hundred
-   * pixels from their origin those rings are locally almost straight, so the
-   * hero was covered in faint arcs reading as horizontal lines. Sampled down
-   * a clear column it oscillated 24/255 every two pixels — a periodic moiré,
-   * which is the opposite of grain.
-   *
-   * fractalNoise is genuinely random, so it has no frequency to beat against
-   * the pixel grid. Inline as a data URI, so it stays a single self-contained
-   * stylesheet with no image request.
-   */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
-  mix-blend-mode: multiply;
-}
-
-.strip-film { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; opacity: .5; filter: saturate(.7) contrast(1.02); pointer-events: none; }
-/* With a film behind it the paper rules would fight the footage, so the stage
-   drops to a plain warm wash and lets the clip carry the surface. */
-.strip-stage.has-film { background: #cbbb9c; }
-.strip-stage.has-film::after { background: linear-gradient(90deg, rgba(60, 44, 24, .34), transparent 16%, transparent 84%, rgba(60, 44, 24, .34)); }
-
-.strip-deck { position: absolute; inset: 0; z-index: 2; transform-style: preserve-3d; }
-
-/* Card. Everything here keys off --focus, which the loop writes each frame. */
-.strip-card {
-  --focus: 0;
-  position: absolute; top: 50%; left: 50%;
-  /*
-   * Sized against BOTH axes, which is the fix for the focused card being
-   * clipped at top and bottom.
-   *
-   * The width came from 16.8vw and the stage height from clamp(430px, 54vh,
-   * 560px) — one keyed to the viewport's width, the other to its height, with
-   * nothing relating them. On a wide, short window (1440x620, 1920x700, a
-   * laptop with a toolbar) the width term ran to its 238px maximum while the
-   * stage sat on its 430px floor, and the card came out 452px tall inside it.
-   *
-   * A focused card ends up about 1.9x its own width once scale (1.23) and the
-   * perspective at translateZ 145 (1.11) are applied, so 26vh keeps the peak
-   * inside even the floored stage. It only binds below roughly 915px of
-   * viewport height; above that 16.8vw is still the smaller term and nothing
-   * about the desktop layout changes.
-   */
-  width: clamp(154px, min(16.8vw, 26vh), 238px); aspect-ratio: .72;
-  /*
-   * No mat, no border, no inner rule.
-   *
-   * The card used to be a tan plate with the photograph inset 7px inside it
-   * and a hairline drawn around that — a print in a mount. It reads vintage,
-   * and it costs every image 14px of its own width to say so. The photograph
-   * now IS the card: it bleeds to the edge and the three-layer shadow does
-   * the work of separating it from the paper.
-   */
-  padding: 0; border: 0; border-radius: 3px;
-  background: #3a3226; color: #f3e7ce;
-  /*
-   * Three layers, not one.
-   *
-   * A single shadow — which is what this was — reads as a card stuck to a
-   * board, because real light never produces one evenly dark shape. What
-   * sells depth is a tight contact shadow where the object is closest, a
-   * mid penumbra, and a very wide, very faint ambient wash. Each layer is
-   * weaker and broader than the one before it.
-   *
-   * The negative spreads matter as much as the blurs: they pull each layer
-   * back under the card before it blurs outward, so the shadow disperses
-   * instead of ringing the plate in a dark halo.
-   *
-   * All three scale with --focus, so a card gains depth as it comes forward
-   * and flattens toward the page as it recedes.
-   */
-  box-shadow:
-    0 calc(2px + var(--focus) * 5px) calc(5px + var(--focus) * 9px) -3px rgba(41, 27, 13, calc(.14 + var(--focus) * .12)),
-    0 calc(12px + var(--focus) * 26px) calc(30px + var(--focus) * 52px) -14px rgba(48, 32, 16, calc(.15 + var(--focus) * .19)),
-    0 calc(24px + var(--focus) * 48px) calc(64px + var(--focus) * 104px) -26px rgba(48, 32, 16, calc(.13 + var(--focus) * .2));
-  appearance: none; outline: none;
-  transform-style: preserve-3d; will-change: transform, opacity, filter;
-  /*
-   * none, because the deck is raked.
-   *
-   * This was pan-y while the fan ran level: the deck took the horizontal axis
-   * and the page kept the vertical one. That split stops working at 50
-   * degrees. A swipe along the raked line is MOSTLY vertical, so the browser
-   * claimed it as a page scroll and the hero slid away under a gesture that
-   * was plainly aimed at the deck.
-   *
-   * A photograph now claims the whole gesture, and the drag decides what the
-   * gesture meant by projecting it onto the fan's axis. The paper around the
-   * deck still has touch-action auto, so a swipe that starts off a card
-   * scrolls the page exactly as before — which was the original rule: the
-   * images take the gesture, the paper does not.
-   */
-  touch-action: none;
-  cursor: grab;
-}
-.strip-card:active { cursor: grabbing; }
-.strip-card:focus-visible { box-shadow: 0 26px 50px rgba(57, 38, 19, .42), 0 0 0 4px rgba(197, 167, 109, .6); }
-
-/* The caption bar is gone, so the portrait takes the whole plate. */
-.strip-portrait { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; background: #3a3226; }
-.strip-portrait img {
-  display: block; width: 100%; height: 100%; object-fit: cover;
-  -webkit-user-drag: none; pointer-events: none;
-  /* Out-of-focus cards pull back and desaturate — the authored grading. */
-  transform: scale(calc(1.04 + (1 - var(--focus)) * .06));
-  filter: sepia(calc((1 - var(--focus)) * .24)) saturate(calc(.66 + var(--focus) * .34)) contrast(1.04);
-}
-.strip-mark { position: absolute; right: 6px; bottom: 5px; z-index: 2; font-family: 'DM Mono', monospace; font-size: 6px; letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 255, 255, .62); text-shadow: 0 1px 3px rgba(0, 0, 0, .6); pointer-events: none; white-space: nowrap; }
-
-/* Caption bar — the authored anatomy, carrying couple and place. */
-
-.strip-nav { position: relative; z-index: 6; display: flex; justify-content: space-between; align-items: center; width: min(1440px, 92vw); margin-top: 14px; color: #fdfaf3; animation: hero-in .9s var(--ease-out) .22s both; }
-.strip-nav button { width: 48px; height: 48px; display: grid; place-items: center; opacity: .5; transition: opacity .3s ease, transform .35s var(--ease-out); }
-.strip-nav button:hover { opacity: 1; }
-.strip-nav button:first-child:hover { transform: translateX(-5px); }
-.strip-nav button:last-child:hover { transform: translateX(5px); }
-.strip-nav button:focus-visible { outline: 1px solid #fdfaf3; outline-offset: 2px; border-radius: 50%; }
-
-.strip-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-
-.strip-title { position: relative; z-index: 6; text-align: center; color: #fdfaf3; margin-top: 18px; animation: hero-in .9s var(--ease-out) .26s both; }
-.strip-title h2 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 400; font-style: italic; font-size: clamp(30px, 4.2vw, 52px); letter-spacing: .01em; }
-.strip-title h2 span { font-style: normal; letter-spacing: .06em; }
-.strip-title p { margin: 12px 0 0; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; opacity: .84; }
-
-.strip-scroll { position: relative; z-index: 6; display: flex; align-items: center; gap: 10px; margin-top: 26px; color: #fdfaf3; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; opacity: .8; transition: opacity .25s ease; animation: hero-in .9s var(--ease-out) .38s both; }
-.strip-scroll:hover { opacity: 1; }
-.strip-scroll svg { animation: cue 2.4s var(--ease-in-out) infinite; }
-
-/* Compact: the deck stands up and runs vertically, as authored. */
-@media (max-width: 650px) {
-  .strip { min-height: auto; padding: 36px 0 42px; }
-  .strip-stage {
-    height: clamp(420px, 62vh, 540px);
-    /*
-     * The ruled paper had a SECOND declaration here — tighter than the
-     * desktop one (88px rows, columns every 50%) — so removing the rules from
-     * the base rule cleaned up desktop and left the phone fully ruled. Worse
-     * on a narrow screen, since the same grid is drawn across a third of the
-     * width. Both are gone now; this override only sets the height and the
-     * light, and inherits the paper from the base rule.
-     */
-    background:
-      radial-gradient(ellipse 54% 42% at 50% 50%, rgba(255, 246, 220, .5), transparent);
-  }
-  /* Standing vertically, the deck occupies a tall narrow column rather than a
-     wide band, so the clearing has to change shape with it. */
-  .strip::after {
-    -webkit-mask-image: radial-gradient(ellipse 62% 46% at 50% 54%, transparent 48%, #000 84%);
-    mask-image: radial-gradient(ellipse 62% 46% at 50% 54%, transparent 48%, #000 84%);
-  }
-  .strip-card { width: clamp(142px, 47vw, 180px); }
-  .strip-nav { width: 88vw; }
-  .strip-title { margin-top: 14px; padding: 0 6vw; }
-  .strip-title p { letter-spacing: .14em; line-height: 1.9; }
+@media (max-width: 640px) {
+  .hero { min-height: auto; padding: 44px 0 50px; }
+  .hero-wordmark { margin-bottom: -28px; }
+  .hero-nav { width: 86vw; margin-top: 0; }
+  .hero-stage { height: 336px; --gap: 176px; }
+  .hero-frame { width: 196px; height: 280px; }
+  .hero-title { margin-top: 24px; padding: 0 6vw; }
+  .hero-title p { letter-spacing: .14em; line-height: 1.9; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .strip-card { will-change: auto; }
-  .strip-wordmark, .strip-stage, .strip-nav, .strip-title, .strip-scroll { animation: none; }
-  .strip-scroll svg { animation: none; }
-  .strip-nav button:hover { transform: none; }
+  .hero-wordmark, .hero-stage, .hero-nav, .hero-title, .hero-scroll { animation: none; }
+  .hero-scroll svg { animation: none; }
 }
+
 
 /* ============================================================
    IMAGE HOVER — one vocabulary, and only where hovering is real
@@ -1172,22 +952,8 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 
   /* --- work index rows ---------------------------------------------- */
   .work-row:hover .row-image .shot img { transform: scale(var(--zoom)); filter: saturate(1); }
-
-  /* --- filmstrip hero ------------------------------------------------
-     The deck writes each card's transform every frame, so a CSS
-     transform here would simply be overwritten. Hover therefore works
-     through light and shadow only, which the loop does not touch. */
-  .strip-card { transition: box-shadow .4s var(--ease-out); }
-  /* Same three layers, lifted — hovering must not collapse a dispersed
-     shadow back into a single hard one. */
-  .strip-card:hover {
-    box-shadow:
-      0 calc(3px + var(--focus) * 5px) calc(7px + var(--focus) * 9px) -3px rgba(41, 27, 13, calc(.16 + var(--focus) * .12)),
-      0 calc(18px + var(--focus) * 28px) calc(40px + var(--focus) * 56px) -14px rgba(48, 32, 16, calc(.19 + var(--focus) * .19)),
-      0 calc(34px + var(--focus) * 52px) calc(80px + var(--focus) * 112px) -26px rgba(48, 32, 16, calc(.17 + var(--focus) * .2));
-  }
-  .strip-card:hover .strip-portrait img { filter: saturate(calc(.78 + var(--focus) * .32)) contrast(1.06); }
 }
+
 
 /* Coarse pointers get the press instead: a brief settle on tap, which is
    feedback you can actually feel rather than a state that sticks. */
@@ -1200,8 +966,7 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
   .depth-photo:hover, .band-card:hover, .couple-card:hover,
   .depth-photo:active, .band-card:active, .couple-card:active { transform: none; }
   .depth-photo:hover .shot img, .band-card:hover .shot img,
-  .couple-card:hover .shot img, .work-row:hover .row-image .shot img,
-  .strip-card:hover .strip-portrait img { transform: none; }
+  .couple-card:hover .shot img, .work-row:hover .row-image .shot img { transform: none; }
 }
 
 
