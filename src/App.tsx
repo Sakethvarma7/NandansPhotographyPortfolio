@@ -377,6 +377,7 @@ function PageIntro({ label, title, description }: { label: string; title: ReactN
 
 /** One category band on the home page: heading, rule, then its collection cards. */
 function CategoryBand({ category, navigate }: { category: WorkCategory; navigate: Nav }) {
+  const storyCount = category.collections.reduce((sum, item) => sum + item.stories.length, 0);
   return (
     <section className="band">
       <div className="band-head reveal">
@@ -400,21 +401,27 @@ function CategoryBand({ category, navigate }: { category: WorkCategory; navigate
         ))}
 
         {/*
-          Maternity, Portrait and Baby shower have a single collection. Left
-          alone, that one card stretched the full width and swallowed the
-          viewport. It now shares the row with a quiet editorial column, which
-          fills the space with something worth reading instead of banner.
+          Every band lays out on three tracks, so a category with one or two
+          collections has room left over. It goes to a quiet editorial column
+          rather than to stretching the cards — which is what used to happen,
+          and it meant the photographs changed size from band to band all the
+          way down the page.
         */}
-        {category.collections.length === 1 && (
-          <aside className="band-aside reveal" style={{ '--i': 1 } as CSSProperties}>
+        {category.collections.length < 3 && (
+          <aside className="band-aside reveal" style={{ '--i': category.collections.length } as CSSProperties}>
             <p className="body-copy">{category.description}</p>
             <span className="band-aside-count">
-              {category.collections[0].stories.length}
-              {category.collections[0].stories.length === 1 ? ' story' : ' stories'}
+              {storyCount} {storyCount === 1 ? 'story' : 'stories'}
             </span>
             <button
               className="band-aside-cta"
-              onClick={() => navigate(`/work/${category.id}/${category.collections[0].id}`)}
+              onClick={() => navigate(
+                /* One collection is not a choice, so send them straight to it;
+                   with two, the category page is where the choice lives. */
+                category.collections.length === 1
+                  ? `/work/${category.id}/${category.collections[0].id}`
+                  : `/work/${category.id}`,
+              )}
             >
               See the {category.label.toLowerCase()} work <ArrowUpRight size={15} />
             </button>

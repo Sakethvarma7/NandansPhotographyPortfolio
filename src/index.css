@@ -129,8 +129,16 @@ em { font-family: 'Libre Caslon Text', serif; font-weight: 400; font-style: ital
    read as a caption for something else rather than as this heading's own line. */
 .band-head p { grid-area: 2 / 1; margin: 0; font-family: 'Jost', sans-serif; font-size: 12px; letter-spacing: .13em; text-transform: uppercase; color: #5a6158; }
 
-.band-grid { display: grid; gap: 22px; grid-template-columns: repeat(2, 1fr); }
-.band-grid[data-count='3'] { grid-template-columns: repeat(3, 1fr); }
+/*
+ * EVERY band runs on the same three tracks, no matter how many collections
+ * the category has. The grid used to be sized by the count — two columns for
+ * two collections, three for three — so an Engagement card came out half the
+ * page wide while a Wedding card was a third, and scrolling the home page
+ * meant watching the photographs change size band by band. Where a category
+ * has fewer than three collections the editorial column takes up the slack,
+ * so the row is always full and the cards are always the same size.
+ */
+.band-grid { display: grid; gap: 22px; grid-template-columns: repeat(3, 1fr); }
 .band-card { position: relative; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 2px; color: #fff; display: block; }
 .band-card .shot img { transition: transform .8s cubic-bezier(.2, .7, .2, 1), filter .5s ease; }
 .band-card-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(12, 15, 12, .55), rgba(12, 15, 12, .12) 55%); }
@@ -294,8 +302,6 @@ footer { background: #26211a; color: #e8e2d4; padding: 55px 4.5vw 25px; display:
 
 /* --------------------------------------------------------- RESPONSIVE --- */
 @media (max-width: 1100px) {
-  .band-grid[data-count='3'] { grid-template-columns: repeat(2, 1fr); }
-  .band-grid[data-count='3'] .band-card:first-child { grid-column: span 2; aspect-ratio: 21 / 9; }
 }
 
 @media (max-width: 900px) {
@@ -343,6 +349,8 @@ footer { background: #26211a; color: #e8e2d4; padding: 55px 4.5vw 25px; display:
   .band-grid, .band > .band-grid, .band-grid[data-count='1'], .band-grid[data-count='3'] { display: flex; grid-template-columns: none; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; -ms-overflow-style: none; margin: 0 -6vw; padding: 0 6vw 4px; }
   .band-grid::-webkit-scrollbar { display: none; }
   .band-grid > .band-card, .band-grid[data-count='1'] .band-card, .band-grid[data-count='3'] .band-card:first-child { flex: 0 0 76%; grid-column: auto; aspect-ratio: 4 / 3; scroll-snap-align: center; }
+  /* The words take a slide of their own, the same width as a photograph. */
+  .band-grid > .band-aside { flex: 0 0 76%; grid-column: auto; scroll-snap-align: center; justify-content: flex-start; }
 
   .couple-grid { grid-template-columns: 1fr; gap: 4px; }
   .collection-head, .story-head { padding-left: 6vw; padding-right: 6vw; padding-top: 90px; }
@@ -604,8 +612,6 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 
 /* An asymmetric first cell breaks the three-equal-columns look on wide screens. */
 @media (min-width: 1101px) {
-  .band-grid[data-count='3'] { grid-template-columns: 1.34fr 1fr 1fr; }
-  .band-grid[data-count='3'] .band-card:first-child { aspect-ratio: 5 / 4; }
 }
 
 @media (max-width: 640px) {
@@ -617,8 +623,17 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 /* A category with a single collection: the card keeps a sane 4:3 and shares the
    row with a short editorial column, instead of stretching to a 21:9 banner
    that filled the screen. */
-.band-grid[data-count='1'] { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: stretch; gap: 34px; }
-.band-grid[data-count='1'] .band-card { aspect-ratio: 4 / 3; }
+/*
+ * start, not stretch. A stretched grid item that also has an aspect-ratio
+ * grows SIDEWAYS to keep its ratio when the row is made taller by something
+ * else — so next to the taller editorial column the cards were quietly
+ * spilling out of their own tracks, 239px in a 211px column.
+ */
+.band-grid { align-items: start; }
+/* The words still reach the foot of the photographs beside them. */
+.band-aside { align-self: stretch; }
+/* One card, so the words get the other two tracks. */
+.band-grid[data-count='1'] .band-aside { grid-column: span 2; }
 
 .band-aside { display: flex; flex-direction: column; justify-content: flex-end; gap: 18px; padding: 0 0 6px 4px; }
 .band-aside .body-copy { max-width: 34ch; font-size: 16px; }
@@ -627,39 +642,17 @@ h1, h2, .band-head h2, .row-title { text-wrap: balance; }
 .band-aside-cta:hover { opacity: .62; gap: 15px; }
 
 @media (max-width: 900px) {
-  .band-grid[data-count='1'] { grid-template-columns: 1fr; gap: 24px; }
   .band-aside { padding-left: 0; }
 }
 
 @media (max-width: 640px) {
   /*
-   * A swipe carousel needs something to swipe between. With one collection
-   * there is nothing to swipe to, and pinning the text into a 76%-wide track
-   * cramped and clipped it. So this band opts out of the scroller entirely:
-   * the photograph sits full width and the words sit underneath it, where
-   * they have the whole column to breathe.
+   * A single-collection band used to opt out of the scroller and run its
+   * photograph full width, on the grounds that a carousel needs something to
+   * swipe between. It has one now — the editorial column is a slide of its own
+   * — so it can stay in, and every photograph on the page is the same size.
    */
-  .band-grid[data-count='1'] {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-    overflow: visible;
-    scroll-snap-type: none;
-    margin: 0;
-    padding: 0;
-  }
-  .band-grid[data-count='1'] .band-card {
-    flex: none;
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    scroll-snap-align: none;
-  }
-  .band-grid[data-count='1'] .band-aside {
-    flex: none;
-    justify-content: flex-start;
-    gap: 14px;
-    padding: 0;
-  }
+  .band-aside { gap: 14px; padding: 0; }
   .band-aside .body-copy { max-width: none; font-size: 15px; }
   .band-aside-cta { font-size: 12px; padding-bottom: 8px; }
 }
